@@ -182,7 +182,7 @@ a.chip:hover { border-color: var(--hi); color: var(--lit); }
 .ins-body .sec p { font-size: 14px; }
 .ins-body .inh .chain { opacity: .7; }
 .ins-body p.noev { font-size: 11px; margin: 2px 0 14px; }
-.kv { display: grid; grid-template-columns: 112px 1fr; gap: 8px 14px; margin: 0; font-size: 13.5px; background: var(--well); border-radius: 10px; padding: 12px 14px; }
+.kv { display: grid; grid-template-columns: 136px 1fr; gap: 8px 14px; margin: 0; font-size: 13.5px; background: var(--well); border-radius: 10px; padding: 12px 14px; }
 .kv dt { font: 10.5px var(--mono); letter-spacing: .03em; color: var(--muted); text-transform: uppercase; padding-top: 3px; }
 .kv dd { margin: 0; }
 .kv dd.strong { color: var(--strong); }

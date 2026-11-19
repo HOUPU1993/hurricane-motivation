@@ -172,7 +172,7 @@ HM.sources({
   acs:      { label: "ACS 5-year", url: "https://data.census.gov/",
               apa: "U.S. Census Bureau. (n.d.). <i>American Community Survey 5-year estimates</i> (Tables B25035, B25036, B25038, B25039, B07001) [Data set]." },
   infutor:  { label: "Infutor", apa: "Infutor Data Solutions. (n.d.). <i>Property and residential history records</i> [Data set; proprietary]." },
-  gps:      { label: "Mobile GPS data", apa: "Mobile device location data (provider to be specified) [Data set; proprietary]. Residence and monthly mobility location clusters." },
+  gps:      { label: "Mobile phone location data", apa: "Mobile phone location data (provider to be specified) [Data set; proprietary]. Residence and monthly mobility location clusters." },
   nsi:      { label: "USACE NSI", url: "https://www.hec.usace.army.mil/confluence/nsi/technicalreferences/latest/technical-documentation",
               apa: "U.S. Army Corps of Engineers, Hydrologic Engineering Center. (n.d.). <i>National Structure Inventory (NSI): Technical documentation</i> [Data set].",
               note: "Attribute table: https://www.hec.usace.army.mil/confluence/nsi/userguides/survey-tool/attribute-guide" },

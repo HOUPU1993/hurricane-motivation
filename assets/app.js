@@ -252,7 +252,7 @@
       });
       const hasKids = n.children && n.children.length;
       const dots = (n.hypotheses || []).map((hh) => `<i class="dot ${esc(hh.dir)}"></i>`).join("");
-      const sign = n.metric && n.metric.sign ? `<i class="nsign ${signCls(n.metric.sign)}" title="expected sign on evacuation motivation">${SIGN[n.metric.sign]}</i>` : "";
+      const sign = n.metric && n.metric.sign ? `<i class="nsign ${signCls(n.metric.sign)}" title="expected direction on evacuation motivation">${SIGN[n.metric.sign]}</i>` : "";
       const toggle = hasKids && n._d > 0
         ? `<span class="tg mono${isOpen(n) ? " open" : ""}" data-toggle="${esc(n.key)}" title="${isOpen(n) ? "hide" : "show"} ${n.children.length} items">${isOpen(n) ? "" : `<b>${n.children.length}</b>`}<i class="chev"></i></span>`
         : "";
@@ -327,7 +327,7 @@
         <dl class="kv">
           <dt>Metric</dt><dd class="strong">${esc(metric.name || n.label)}</dd>
           <dt>Measure</dt><dd>${metric.measure || '<span class="na">to be specified</span>'}</dd>
-          <dt>Expected sign</dt><dd>${metric.sign ? `<span class="sign ${signCls(metric.sign)}">${SIGN[metric.sign]}</span> on evacuation motivation` : '<span class="na">—</span>'}</dd>
+          <dt>Expected Directions</dt><dd>${metric.sign ? `<span class="sign ${signCls(metric.sign)}">${SIGN[metric.sign]}</span> on evacuation motivation` : '<span class="na">—</span>'}</dd>
           <dt>Data source</dt><dd>${srcChips(metric.source) || '<span class="na">to be specified</span>'}</dd>
         </dl></div>`;
     }

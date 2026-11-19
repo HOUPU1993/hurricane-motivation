@@ -11,7 +11,7 @@ HM.mechanism({
   ],
   notes: [
     "The 300-household survey cited as “Pham (2020)” links to a 2013 report by Wilmot and Gudishala that does not contain this survey; the original source needs to be identified. The notes also say “loss from roofers”; check whether “looters” is meant.",
-    "Building type: single-family, multi-family and apartment households have uncertain expected signs."
+    "Building type: single-family, multi-family and apartment households have uncertain expected directions."
   ],
   children: [
     {
