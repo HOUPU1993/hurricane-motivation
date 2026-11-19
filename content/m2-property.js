@@ -17,7 +17,7 @@ HM.mechanism({
         {
           dir: "neg",
           chain: "predicted personal house stake loss(+) → perceived loss if evacuate(+) → evacuation motivation(-)",
-          evidence: "[@pham2020] surveyed 300 households: 23% of households who stayed in place explained that they wanted to prevent storm damage to their house, and 15% to prevent loss from roofers. The survey-based analysis of [@weller2016] also shows that the motivation to protect the house is an important reason for non-evacuation."
+          evidence: "In a survey of 300 households in the New Orleans area about Hurricane Gustav (2008), [@wilmot2013] report that among households that did not evacuate, 23% wanted to **protect their property from the storm** and 15% wanted to **protect their property from looters**. The survey-based analysis of [@weller2016] also shows that the motivation to protect the house is an important reason for non-evacuation."
         }
       ],
       children: [

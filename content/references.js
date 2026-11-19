@@ -155,6 +155,10 @@ HM.references({
     title: "Evacuation from natural disasters: A systematic review of the literature",
     journal: "Risk Analysis", volume: "37", issue: "4", pages: "812–839", doi: "10.1111/risa.12654" },
 
+  wilmot2013: { type: "report", authors: ["Wilmot, C. G.", "Gudishala, R."], year: 2013,
+    title: "Development of a time-dependent hurricane evacuation model for the New Orleans area", number: "Report No. FHWA/LA.12/494",
+    publisher: "Louisiana Transportation Research Center", url: "https://rosap.ntl.bts.gov/view/dot/25769" },
+
   weller2016: { type: "article", authors: ["Weller, S. C.", "Baer, R.", "Prochaska, J."], year: 2016,
     title: "Should I stay or should I go? Response to the Hurricane Ike evacuation order on the Texas Gulf Coast",
     journal: "Natural Hazards Review", volume: "17", issue: "3", pages: "Article 04016003", doi: "10.1061/(ASCE)NH.1527-6996.0000217" }
