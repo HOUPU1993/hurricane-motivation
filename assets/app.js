@@ -444,6 +444,73 @@
       <section><div class="sec-head"><h2>Data sources</h2><span class="mono note">${Object.keys(HM.srcs).length} sources</span></div><ol class="refs">${srcs}</ol></section>`;
   }
 
+  // ---------- page: metrics ----------
+  function metricRows() {
+    return HM.mechs.flatMap((m) => Object.values(HM.nodes)
+      .filter((n) => n.mech === m && n.metric)
+      .sort((a, b) => a.path.split(".").map(Number).reduce((r, v, i) => r || v - (b.path.split(".").map(Number)[i] ?? -1), 0) || a.path.length - b.path.length)
+      .map((n) => ({ m, n, x: n.metric })));
+  }
+  function viewMetrics() {
+    const rows = metricRows();
+    const withSrc = rows.filter((r) => (r.x.source || []).length).length;
+    const srcKeys = Object.keys(HM.srcs).filter((k) => rows.some((r) => (r.x.source || []).includes(k)));
+    const dirCell = (sg) => sg ? `<span class="sign ${signCls(sg)}">${SIGN[sg]}</span>` : '<span class="na">—</span>';
+    const sections = HM.mechs.map((m) => {
+      const mr = rows.filter((r) => r.m === m);
+      if (!mr.length) return `<section class="msec empty"><div class="sec-head"><h2><span class="mono mcode">Mechanism ${esc(String(m.code).replace(/^M/, ""))}</span>${esc(m.title)}</h2><span class="mono note">no metrics specified yet</span></div></section>`;
+      const body = mr.map(({ n, x }) => {
+        const trail = pathOf(n).slice(1, -1).map((a) => esc(a.label)).join('<span class="tsep">›</span>');
+        const text = [m.title, pathOf(n).map((a) => a.label).join(" "), x.name, stripTags(x.measure || ""), (x.source || []).map((k) => (HM.srcs[k] || {}).label || k).join(" ")].join(" ").toLowerCase();
+        return `<tr data-text="${esc(text)}" data-src="${esc((x.source || []).join(" ") || "none")}">
+          <td class="mpath">${trail || '<span class="na">—</span>'}</td>
+          <td class="mname"><a href="${hrefOf(n)}" title="open in overview">${esc(x.name || n.label)}</a></td>
+          <td>${x.measure || '<span class="na">to be specified</span>'}</td>
+          <td>${srcChips(x.source) || '<span class="na">to be specified</span>'}</td>
+          <td class="dir">${dirCell(x.sign)}</td>
+        </tr>`;
+      }).join("");
+      return `<section class="msec" data-m="${m.id}">
+        <div class="sec-head"><h2><span class="mono mcode">Mechanism ${esc(String(m.code).replace(/^M/, ""))}</span>${esc(m.title)}</h2><span class="mono note mcount">${mr.length} metrics</span></div>
+        <div class="tbl-wrap"><table class="tbl mtbl"><thead><tr><th>Dimension / group</th><th>Metric</th><th>Measure</th><th>Data source</th><th>Expected Directions</th></tr></thead><tbody>${body}</tbody></table></div>
+      </section>`;
+    }).join("");
+    return `<header class="hero"><div class="kicker mono">Index</div><h1>Metrics</h1>
+        <p class="lead">How each metric in the framework is measured: its construction, data source and expected direction on evacuation motivation. Select a metric to open it in the overview.</p></header>
+      <div class="readout mono">
+        <div><b>${rows.length}</b><span>metrics</span></div>
+        <div><b>${withSrc}</b><span>with data source</span></div>
+        <div><b>${rows.length - withSrc}</b><span>source to be specified</span></div>
+        <div><b>${srcKeys.length}</b><span>data sources</span></div>
+      </div>
+      <div class="mtools">
+        <input id="mfilter" class="filter mono" placeholder="search metrics, measures, sources" aria-label="Search metrics">
+        <div class="srcfilter mono" id="srcfilter"><button class="on" data-f="">all</button>${srcKeys.map((k) => `<button data-f="${esc(k)}">${esc(HM.srcs[k].label)}</button>`).join("")}<button data-f="none">no source yet</button></div>
+      </div>
+      ${sections}
+      <p class="note mono" id="mempty" hidden>No metrics match.</p>`;
+  }
+  function bindMetrics() {
+    let q = "", f = "";
+    const apply = () => {
+      let total = 0;
+      $$(".msec.empty").forEach((sec) => (sec.hidden = !!(q || f)));
+      $$(".msec:not(.empty)").forEach((sec) => {
+        let n = 0;
+        $$("tbody tr", sec).forEach((tr) => {
+          const hit = (!q || tr.dataset.text.includes(q)) && (!f || tr.dataset.src.split(" ").includes(f));
+          tr.hidden = !hit; n += hit;
+        });
+        sec.hidden = !n; total += n;
+      });
+      $("#mempty").hidden = total > 0;
+    };
+    $("#mfilter").oninput = (e) => { q = e.target.value.trim().toLowerCase(); apply(); };
+    $$("#srcfilter button").forEach((b) => (b.onclick = () => {
+      f = b.dataset.f; $$("#srcfilter button").forEach((x) => x.classList.toggle("on", x === b)); apply();
+    }));
+  }
+
   // ---------- router ----------
   function route() {
     const parts = location.hash.replace(/^#\/?/, "").split("/").filter(Boolean);
@@ -452,6 +519,9 @@
     if (parts[0] === "references") {
       state.page = "references"; state.rendered = null;
       app.innerHTML = viewReferences(); openInspector(null); window.scrollTo(0, 0);
+    } else if (parts[0] === "metrics") {
+      state.page = "metrics"; state.rendered = null;
+      app.innerHTML = viewMetrics(); bindMetrics(); openInspector(null); window.scrollTo(0, 0);
     } else {
       const mech = HM.mechs.find((m) => m.id === parts[0]) ? parts[0] : null;
       const nodeKey = mech && parts[1] ? `${mech}/${parts[1]}` : mech;
@@ -465,8 +535,8 @@
       if (changedMech && mech) requestAnimationFrame(() => $("#decomp").scrollIntoView({ behavior: "smooth", block: "start" }));
       if (!mech) window.scrollTo(0, 0);
     }
-    $$("#nav a").forEach((a) => a.classList.toggle("active", a.dataset.r === (state.page === "references" ? "references" : "home")));
-    document.title = (state.mech && state.page === "home" ? HM.mechs.find((m) => m.id === state.mech).title + " · " : state.page === "references" ? "References · " : "") + "Evacuation Motivation Framework";
+    $$("#nav a").forEach((a) => a.classList.toggle("active", a.dataset.r === (state.page === "home" ? "home" : state.page)));
+    document.title = (state.mech && state.page === "home" ? HM.mechs.find((m) => m.id === state.mech).title + " · " : state.page === "references" ? "References · " : state.page === "metrics" ? "Metrics · " : "") + "Evacuation Motivation Framework";
   }
 
   function bindFigure() {

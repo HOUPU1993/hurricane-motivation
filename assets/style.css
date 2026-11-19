@@ -228,6 +228,34 @@ a.chip:hover { border-color: var(--hi); color: var(--lit); }
 .uses li > a { font: 11.5px var(--mono); color: var(--hi); }
 .uses li p { margin: 4px 0 0; font-size: 13.5px; }
 
+/* ---------- metrics page ---------- */
+.readout { display: flex; flex-wrap: wrap; background: var(--card); border-radius: 12px; box-shadow: var(--lift); margin: 0 0 22px; }
+.readout > div { padding: 12px 20px; border-right: 1px solid var(--faint); display: flex; gap: 8px; align-items: baseline; font-size: 11px; color: var(--muted); }
+.readout > div:last-child { border-right: 0; }
+.readout b { color: var(--strong); font-size: 18px; font-weight: 400; }
+.mtools { display: flex; flex-direction: column; gap: 10px; margin-bottom: 8px; }
+.filter { background: var(--card); border: 0; box-shadow: var(--lift); color: var(--strong); border-radius: 8px; padding: 9px 12px; font-size: 12px; width: 340px; max-width: 100%; outline: none; }
+.filter:focus { box-shadow: var(--lift), 0 0 0 1px var(--mid); }
+.srcfilter { display: flex; flex-wrap: wrap; gap: 6px; }
+.srcfilter button { font: 11px var(--mono); color: var(--muted); background: none; border: 1px solid var(--lo); border-radius: 99px; padding: 3px 10px; cursor: pointer; }
+.srcfilter button:hover { color: var(--strong); border-color: var(--mid); }
+.srcfilter button.on { color: var(--page); background: var(--hi); border-color: var(--hi); }
+.msec { margin-top: 36px; }
+.msec.empty { margin-top: 28px; }
+.msec.empty h2 { color: var(--muted); font-size: 17px; }
+.msec h2 { display: flex; gap: 12px; align-items: baseline; flex-wrap: wrap; }
+.mcode { font-size: 11px; color: var(--muted); font-weight: 400; text-transform: uppercase; }
+.mtbl { background: var(--card); border-radius: 12px; box-shadow: var(--lift); margin-top: 6px; }
+.mtbl th { padding: 10px 12px; }
+.mtbl td { padding: 11px 12px; font-size: 13px; }
+.mtbl th:nth-child(1) { width: 22%; } .mtbl th:nth-child(2) { width: 22%; } .mtbl th:nth-child(4) { width: 18%; } .mtbl th:nth-child(5) { width: 96px; }
+.mtbl tbody tr:hover { background: var(--card-2); }
+.mtbl .mpath { color: var(--muted); font-size: 12px; }
+.mtbl .tsep { color: var(--lo); margin: 0 5px; }
+.mtbl .mname a { color: var(--strong); border-bottom: 1px solid var(--lo); }
+.mtbl .mname a:hover { color: var(--lit); border-color: var(--lit); }
+.mtbl td.dir { text-align: center; }
+
 /* ---------- references page ---------- */
 .refs { list-style: none; padding: 0; margin: 0; }
 .refs li { padding: 14px 0; border-bottom: 1px solid var(--faint); }
