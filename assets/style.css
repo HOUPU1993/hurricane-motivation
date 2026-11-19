@@ -108,8 +108,8 @@ section { margin-top: 44px; }
 .dec-foot .notes { margin: 0; }
 .bg summary { cursor: pointer; font-size: 10.5px; text-transform: uppercase; color: var(--muted); list-style: none; margin-bottom: 8px; }
 .bg summary::-webkit-details-marker { display: none; }
-.bg summary::before { content: "+ "; color: var(--hi); }
-.bg[open] summary::before { content: "− "; }
+.bg summary::before { content: ""; display: inline-block; width: 5px; height: 5px; margin: 0 9px 1px 1px; border-top: 1px solid var(--hi); border-right: 1px solid var(--hi); transform: rotate(45deg); transition: transform .2s; }
+.bg[open] summary::before { transform: rotate(135deg); }
 .bg .summary { max-width: 780px; margin: 0; }
 
 .tree { position: relative; }
@@ -130,8 +130,12 @@ section { margin-top: 44px; }
 .tn-d .dot { width: 6px; height: 6px; }
 .nsign { font-style: normal; font: 600 12px var(--mono); color: var(--muted); }
 .nsign.pos { color: var(--pos); } .nsign.neg { color: var(--neg); } .nsign.ns { color: var(--ns); }
-.tg { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); min-width: 18px; height: 18px; padding: 0 3px; display: grid; place-items: center; font-size: 10px; color: var(--hi); border: 1px solid var(--lo); border-radius: 5px; background: var(--card); cursor: pointer; }
-.tg:hover { border-color: var(--lit); color: var(--lit); }
+.tg { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); height: 20px; min-width: 20px; padding: 0 5px; display: inline-flex; align-items: center; justify-content: center; gap: 4px; font-size: 10px; color: var(--muted); border-radius: 10px; background: var(--card); box-shadow: inset 0 0 0 1px var(--lo); cursor: pointer; }
+.tg b { font-weight: 400; color: var(--hi); }
+.tg .chev { width: 5px; height: 5px; border-top: 1px solid var(--hi); border-right: 1px solid var(--hi); transform: rotate(45deg); margin-left: -1px; }
+.tg.open .chev { transform: rotate(-135deg); margin: 0 -1px 0 1px; }
+.tg:hover { box-shadow: inset 0 0 0 1px var(--hi); }
+.tg:hover .chev { border-color: var(--lit); }
 
 /* causal chain */
 .chain { position: relative; padding: 9px 12px 11px 14px; margin: 8px 0; border-radius: 10px; background: var(--well); }
@@ -206,9 +210,16 @@ a.chip:hover { border-color: var(--hi); color: var(--lit); }
 .vsplit { display: grid; grid-template-columns: 1fr 340px; height: 100%; }
 .vsplit .vcard { border-left: 1px solid var(--faint); overflow-y: auto; padding: 24px; }
 .vsplit .vcard h2 { font-size: 18px; }
-.frame { position: relative; background: #fff; }
-.frame iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; background: transparent; }
-.frame-hint { position: absolute; inset: auto 0 0 0; margin: 0; padding: 10px 14px; font-size: 11px; color: #555; background: #f2f2ef; }
+.frame { display: flex; flex-direction: column; min-height: 0; background: #fff; }
+.frame iframe { flex: 1; width: 100%; border: 0; background: #fff; }
+.frame-hint { margin: 0; padding: 8px 14px; font-size: 10.5px; color: var(--muted); background: #121212; border-bottom: 1px solid var(--faint); }
+.vcard .btn { margin: 4px 0 6px; }
+.vcard .why { margin-top: 14px; }
+.vlabel { margin-top: 26px; }
+.rec-title { font-size: 16px; line-height: 1.45; margin-bottom: 6px; }
+.rec-au { margin: 0 0 4px; font-size: 13.5px; }
+.rec-src { font-size: 11px; color: var(--muted); margin: 0 0 6px; }
+.rec-abs { font-size: 14px; margin: 0 0 14px; white-space: pre-line; }
 .vcard { padding: 40px 48px; max-width: 820px; }
 .vcard h2 { font-size: 24px; margin-bottom: 10px; }
 .vcard .url { color: var(--lo); word-break: break-all; }

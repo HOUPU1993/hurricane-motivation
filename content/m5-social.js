@@ -13,7 +13,7 @@ HM.mechanism({
     {
       label: "Peer evacuation influence",
       kind: "metric",
-      metric: { name: "Peer evacuation exposure", measure: "P<sub>i</sub> = Σ<sub>j</sub>(w<sub>ij</sub> · E<sub>j</sub>) / Σ<sub>j</sub> w<sub>ij</sub>", source: ["gps"], sign: "+" },
+      metric: { name: "Peer evacuation exposure", measure: "P<sub>i</sub> = Σ<sub>j</sub>(w<sub>ij</sub> · E<sub>j</sub>) / Σ<sub>j</sub> w<sub>ij</sub>", sign: "+" },
       hypotheses: [
         {
           dir: "pos",
@@ -26,7 +26,7 @@ HM.mechanism({
       label: "Interregional connections",
       title: "Interregional social connections from a higher-risk area to a lower-risk area",
       kind: "metric",
-      metric: { name: "Interregional connectivity", measure: "OD flow from higher-risk area to lower-risk area", source: ["gps"], sign: "+" },
+      metric: { name: "Interregional connectivity", measure: "OD flow from higher-risk area to lower-risk area", sign: "+" },
       hypotheses: [
         {
           dir: "pos",

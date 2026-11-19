@@ -54,7 +54,7 @@ HM.mechanism({
         {
           dir: "ns",
           chain: "hurricane experience(+) → house preparation(?) → evacuation motivation(?)",
-          evidence: "[@rincon2001] surveyed people who experienced Hurricane Andrew and found **no significant correlation between hurricane experience and house preparation**. They also found that fewer people evacuate to government shelters because of bad prior experiences, especially families with children under 13."
+          evidence: "[@rincon2001] surveyed people who experienced Hurricane Andrew and found **no significant correlation between hurricane experience and house preparation**."
         }
       ]
     },

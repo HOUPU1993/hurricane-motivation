@@ -212,8 +212,10 @@
       });
       const hasKids = n.children && n.children.length;
       const dots = (n.hypotheses || []).map((hh) => `<i class="dot ${esc(hh.dir)}"></i>`).join("");
-      const sign = n.metric && n.metric.sign ? `<i class="nsign ${signCls(n.metric.sign)}">${SIGN[n.metric.sign]}</i>` : "";
-      const toggle = hasKids && n._d > 0 ? `<span class="tg mono" data-toggle="${esc(n.key)}" title="${isOpen(n) ? "collapse" : "expand"}">${isOpen(n) ? "−" : "+" + n.children.length}</span>` : "";
+      const sign = n.metric && n.metric.sign ? `<i class="nsign ${signCls(n.metric.sign)}" title="expected sign on evacuation motivation">${SIGN[n.metric.sign]}</i>` : "";
+      const toggle = hasKids && n._d > 0
+        ? `<span class="tg mono${isOpen(n) ? " open" : ""}" data-toggle="${esc(n.key)}" title="${isOpen(n) ? "hide" : "show"} ${n.children.length} items">${isOpen(n) ? "" : `<b>${n.children.length}</b>`}<i class="chev"></i></span>`
+        : "";
       nodes += `<a class="tn k-${esc(n.kind)}${state.node === n.key ? " sel" : ""}" href="${hrefOf(n)}" data-key="${esc(n.key)}" title="${esc(n.title || n.label)}"
           style="left:${x}px;top:${y - T.H / 2}px;width:${nw}px">
         <span class="tn-l">${esc(n.label)}</span>
@@ -249,7 +251,7 @@
             <details class="bg" open><summary class="mono">literature summary</summary><div class="summary">${(m.summary || []).map((p) => `<p>${rich(p)}</p>`).join("")}</div></details>
             ${(m.notes || []).length ? `<aside class="notes"><div class="block-label mono">Open notes</div><ul>${m.notes.map((x) => `<li>${rich(x)}</li>`).join("")}</ul></aside>` : ""}
           </div>
-          <div class="fig-bar mono"><span class="hint">select a node to inspect · +/− to unfold</span>
+          <div class="fig-bar mono"><span class="hint">select a node to inspect · › to unfold a branch</span>
             <span>${st.metrics} metrics · ${st.hyps} hypotheses · <i class="dot pos"></i>${st.pos} <i class="dot neg"></i>${st.neg} <i class="dot ns"></i>${st.ns}</span></div>
         </figure>
       </section>`;
@@ -303,32 +305,90 @@
   }
 
   // ---------- viewer ----------
-  const NOEMBED = /(sciencedirect|elsevier|wiley|springer|tandfonline|sagepub|ascelibrary|ametsoc|aphapublications|ncbi\.nlm\.nih|proquest|books\.google|doi\.org|census\.gov|cloudfront|jstor|insuranceforgood)/i;
+  const NOEMBED = /(sciencedirect|elsevier|wiley|springer|tandfonline|sagepub|ascelibrary|ametsoc|aphapublications|ncbi\.nlm\.nih|proquest|books\.google|doi\.org|jstor)/i;
 
   function openViewer(kind, key) {
     const item = kind === "ref" ? HM.refs[key] : HM.srcs[key];
     if (!item) return;
     const v = $("#viewer"), body = $("#viewer-body");
+    const token = (viewerToken = {});
     $("#viewer-title").innerHTML = `${esc(kind === "ref" ? "reference" : "data source")} · <b>${esc(item.label)}</b>`;
     const open = $("#viewer-open");
     if (item.url) { open.href = item.url; open.hidden = false; } else open.hidden = true;
+    const hasId = kind === "ref" && (item.doi || item.pii || item.pmcid || item.pmid);
     const embed = item.url && (item.embed === true || (item.embed !== false && !NOEMBED.test(item.url)));
     const cited = kind === "ref" ? (HM.citedIn[key] || []) : sourceUses(key);
-    const card = `<div class="vcard">
-        <div class="kicker mono">${esc(domain(item.url) || "no link")}</div>
-        <h2>${esc(item.label)}</h2>
-        ${item.note ? `<p>${esc(item.note)}</p>` : ""}
-        ${item.url ? `<p class="mono small url">${esc(item.url)}</p>` : ""}
-        ${!embed && item.url ? `<p class="note">This site does not allow pages to be embedded, so it opens in a new tab.</p>
-          <a class="btn mono" href="${esc(item.url)}" target="_blank" rel="noopener">open original ↗</a>` : ""}
-        ${cited.length ? `<div class="block-label mono" style="margin-top:28px">Used in this framework</div>
-          <ul class="uses">${cited.map((c) => { const n = HM.nodes[c.key]; return `<li><a href="${hrefOf(n)}" data-close>${esc((n.kind === "mechanism" ? n.mech.code + " · literature summary" : pathOf(n).map((x) => x.kind === "mechanism" ? x.mech.code : x.label).join(" / ")))}</a>${c.text ? `<p>${rich(c.text)}</p>` : ""}</li>`; }).join("")}</ul>` : ""}
-      </div>`;
+    const uses = cited.length ? `<div class="block-label mono vlabel">Used in this framework</div>
+      <ul class="uses">${cited.map((c) => { const n = HM.nodes[c.key]; return `<li><a href="${hrefOf(n)}" data-close>${esc(n.kind === "mechanism" ? n.mech.code + " · literature summary" : pathOf(n).map((x) => x.kind === "mechanism" ? x.mech.code : x.label).join(" / "))}</a>${c.text ? `<p>${rich(c.text)}</p>` : ""}</li>`; }).join("")}</ul>` : "";
+    const head = `<div class="kicker mono">${esc(domain(item.url) || "no link yet")}</div>
+      <h2>${esc(item.label)}</h2>${item.note ? `<p>${esc(item.note)}</p>` : ""}
+      ${item.url ? `<a class="btn mono" href="${esc(item.url)}" target="_blank" rel="noopener">open original ↗</a>` : ""}`;
+    const record = hasId ? `<div class="record" id="record"><p class="mono note">loading citation record…</p></div>` : "";
+    const why = !embed && item.url ? `<p class="note why">${hasId ? "Publisher pages open in their own browser tab; they cannot be shown inside another website. The citation record and abstract are loaded here instead." : "This page opens in its own browser tab; the site does not allow previews inside other websites."}</p>` : "";
+    const card = `<div class="vcard">${head}${why}${record}${uses}</div>`;
     body.innerHTML = embed
-      ? `<div class="vsplit"><div class="frame"><p class="frame-hint mono">loading… if the page stays blank, the site blocks embedding — use “open in new tab”.</p>
+      ? `<div class="vsplit"><div class="frame"><p class="frame-hint mono">preview · if this area shows “refused to connect”, the site blocks previews — use “open in new tab”.</p>
           <iframe src="${esc(item.url)}" title="${esc(item.label)}" referrerpolicy="no-referrer"></iframe></div>${card}</div>`
       : card;
     v.classList.add("on"); v.setAttribute("aria-hidden", "false");
+    if (hasId) loadRecord(key, item).then((rec) => {
+      if (token !== viewerToken || !$("#record")) return;
+      $("#record").innerHTML = rec ? recordHTML(rec) : `<p class="note">The citation record could not be loaded right now. Use “open original”.</p>`;
+    });
+  }
+  let viewerToken = null;
+
+  // Live citation records from public APIs that allow cross-origin requests.
+  const recordCache = new Map();
+  async function getJSON(url, ms = 9000) {
+    const c = new AbortController(), t = setTimeout(() => c.abort(), ms);
+    try { const r = await fetch(url, { signal: c.signal }); if (!r.ok) throw new Error(r.status); return await r.json(); }
+    finally { clearTimeout(t); }
+  }
+  const plain = (h) => String(h || "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").replace(/^\s*abstract\s*/i, "").trim();
+  function fromCrossref(m) {
+    return {
+      title: (m.title || [])[0], year: ((m.issued || {})["date-parts"] || [[]])[0][0],
+      authors: (m.author || []).map((a) => [a.given, a.family].filter(Boolean).join(" ") || a.name).filter(Boolean),
+      venue: (m["container-title"] || [])[0] || m.publisher, doi: m.DOI, abstract: plain(m.abstract), via: "Crossref"
+    };
+  }
+  async function loadRecord(key, ref) {
+    if (recordCache.has(key)) return recordCache.get(key);
+    let rec = null;
+    try {
+      if (ref.doi) rec = fromCrossref((await getJSON(`https://api.crossref.org/works/${encodeURIComponent(ref.doi)}`)).message);
+      else if (ref.pii) { const it = (await getJSON(`https://api.crossref.org/works?filter=alternative-id:${encodeURIComponent(ref.pii)}&rows=1`)).message.items[0]; if (it) rec = fromCrossref(it); }
+      else {
+        const q = ref.pmcid ? `PMCID:${ref.pmcid}` : `EXT_ID:${ref.pmid} AND SRC:MED`;
+        const r = (await getJSON(`https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=${encodeURIComponent(q)}&resultType=core&format=json`)).resultList.result[0];
+        if (r) rec = { title: r.title, year: r.pubYear, authors: String(r.authorString || "").replace(/\.$/, "").split(", ").filter(Boolean),
+          venue: ((r.journalInfo || {}).journal || {}).title, doi: r.doi, abstract: plain(r.abstractText), via: "Europe PMC" };
+      }
+    } catch (e) { rec = null; }
+    if (rec && rec.doi && !rec.abstract) {
+      try {
+        const s2 = await getJSON(`https://api.semanticscholar.org/graph/v1/paper/DOI:${encodeURIComponent(rec.doi)}?fields=abstract,tldr,openAccessPdf`);
+        if (s2.abstract) { rec.abstract = plain(s2.abstract); rec.absVia = "Semantic Scholar"; }
+        else if (s2.tldr && s2.tldr.text) { rec.tldr = s2.tldr.text; rec.absVia = "Semantic Scholar"; }
+        if (s2.openAccessPdf && s2.openAccessPdf.url) rec.pdf = s2.openAccessPdf.url;
+      } catch (e) { /* abstract stays empty */ }
+    }
+    if (rec) recordCache.set(key, rec);
+    return rec;
+  }
+  function recordHTML(r) {
+    const au = r.authors || [];
+    const authors = au.length > 6 ? au.slice(0, 6).join(", ") + ", et al." : au.join(", ");
+    return `<div class="block-label mono vlabel">Citation record</div>
+      <h3 class="rec-title">${esc(r.title || "")}</h3>
+      ${authors ? `<p class="rec-au">${esc(authors)}</p>` : ""}
+      <p class="rec-src mono">${esc([r.venue, r.year].filter(Boolean).join(" · "))}${r.doi ? ` · <a href="https://doi.org/${esc(r.doi)}" target="_blank" rel="noopener">doi:${esc(r.doi)}</a>` : ""}</p>
+      ${r.abstract ? `<div class="block-label mono vlabel">Abstract</div><p class="rec-abs">${esc(r.abstract)}</p>`
+        : r.tldr ? `<div class="block-label mono vlabel">Summary (TL;DR)</div><p class="rec-abs">${esc(r.tldr)}</p>`
+        : `<p class="note">No abstract is available from public metadata for this work.</p>`}
+      ${r.pdf ? `<a class="btn mono" href="${esc(r.pdf)}" target="_blank" rel="noopener">open-access PDF ↗</a>` : ""}
+      <p class="mono note small">record: ${esc(r.via)}${r.absVia ? ` · abstract: ${esc(r.absVia)}` : ""}</p>`;
   }
   function closeViewer() { const v = $("#viewer"); v.classList.remove("on"); v.setAttribute("aria-hidden", "true"); $("#viewer-body").innerHTML = ""; }
 

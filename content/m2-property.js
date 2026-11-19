@@ -69,7 +69,7 @@ HM.mechanism({
                     {
                       dir: "neg",
                       chain: "predicted personal house stake loss(+) → perceived loss if evacuate(+) → evacuation motivation(-)",
-                      evidence: "[@liao2026] found that higher **home equity** increases the motivation to purchase **flood insurance**. [@karaye2019] found that owners with **flood insurance may prefer to stay in place**; a potential reason is that flood insurance may decrease risk perception. [@botzen2019] shows a correlation between **insurance and long-term flood prevention**."
+                      evidence: "[@liao2026] found that higher **home equity** increases the motivation to purchase **flood insurance**."
                     }
                   ]
                 },
@@ -99,7 +99,7 @@ HM.mechanism({
             {
               dir: "neg",
               chain: "flood insurance coverage(+) → risk perception(-) → evacuation motivation(-)",
-              evidence: "[@karaye2019] found that owners with **flood insurance may prefer to stay in place** compared with those without insurance; a potential reason is that flood insurance may decrease risk perception."
+              evidence: "[@karaye2019] found that owners with **flood insurance may prefer to stay in place** compared with those without insurance; a potential reason is that flood insurance may decrease risk perception. [@botzen2019] shows a correlation between **insurance and long-term flood prevention**."
             }
           ]
         }
@@ -141,9 +141,9 @@ HM.mechanism({
           label: "Building type",
           kind: "group",
           open: false,
-          evidence: "[@karaye2019] and [@tanim2022] found that residents of mobile homes had a significantly higher evacuation tendency than residents of single-family homes.",
           children: [
-            { label: "Mobile home", kind: "metric", metric: { name: "Pct. of mobile home households", sign: "+" } },
+            { label: "Mobile home", kind: "metric", metric: { name: "Pct. of mobile home households", sign: "+" },
+              evidence: "[@solis2010] found that residents of mobile homes were more likely to evacuate. [@karaye2019] and [@tanim2022] found that residents of mobile homes had a significantly higher evacuation tendency than residents of single-family homes." },
             { label: "Single-family", kind: "metric", metric: { name: "Pct. of single-family households", sign: "?" } },
             { label: "Multi-family", kind: "metric", metric: { name: "Pct. of multi-family households", sign: "?" } },
             { label: "Apartment", kind: "metric", metric: { name: "Pct. of apartment households", sign: "?" } }
@@ -156,13 +156,14 @@ HM.mechanism({
           hypotheses: [
             {
               dir: "pos",
-              chain: "high risk perception(+) → evacuation motivation(+)",
-              evidence: "[@robert2010] highlights that people living in an evacuation zone are significantly more likely to evacuate."
+              chain: "high risk perception(+) → evacuation motivation(+)"
             }
           ],
           children: [
-            { label: "Official evacuation zone", kind: "metric", metric: { name: "Official evacuation zone", source: ["fema_zone"], sign: "+" } },
-            { label: "FEMA flood zone", kind: "metric", metric: { name: "FEMA flood zone", source: ["fema_zone"], sign: "+" } },
+            { label: "Official evacuation zone", kind: "metric", metric: { name: "Official evacuation zone", sign: "+" },
+              evidence: "[@robert2010] highlights that people living in an evacuation zone are significantly more likely to evacuate." },
+            { label: "FEMA flood zone", kind: "metric", metric: { name: "FEMA flood zone", sign: "+" },
+              evidence: "[@solis2010] found that residents of flood-prone areas were more likely to evacuate." },
             { label: "Low-lying area", kind: "metric", metric: { name: "Low-lying area", sign: "+" } }
           ]
         },
@@ -173,13 +174,13 @@ HM.mechanism({
           hypotheses: [
             {
               dir: "neg",
-              chain: "structural protection(+) → perceived home safety(+) → evacuation motivation(-)",
-              evidence: "[@hasan2012] found that households with window protection measures (storm shutters, metal panels, or plywood sheets on windows) are less likely to evacuate than households without protection measures."
+              chain: "structural protection(+) → perceived home safety(+) → evacuation motivation(-)"
             }
           ],
           children: [
-            { label: "Window protection (wind)", kind: "metric", metric: { name: "Window protection (wind)", source: ["nsi"], sign: "-" } },
-            { label: "Roof protection (wind)", kind: "metric", metric: { name: "Roof protection (wind)", source: ["nsi"], sign: "-" } },
+            { label: "Window protection (wind)", kind: "metric", metric: { name: "Window protection (wind)", sign: "-" },
+              evidence: "[@hasan2012] found that households with window protection measures (storm shutters, metal panels, or plywood sheets on windows) are less likely to evacuate than households without protection measures." },
+            { label: "Roof protection (wind)", kind: "metric", metric: { name: "Roof protection (wind)", sign: "-" } },
             { label: "Ground elevation (flood)", kind: "metric", metric: { name: "Ground elevation and foundation type (flooding)", source: ["nsi"], sign: "-" } }
           ]
         }

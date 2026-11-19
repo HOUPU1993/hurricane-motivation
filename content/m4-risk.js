@@ -10,7 +10,8 @@ HM.mechanism({
     "However, **objective hazard exposure does not always correspond to perceived risk or evacuation behavior**, as illustrated by [@horney2010b]."
   ],
   notes: [
-    "Risk communication: no data yet for the way warnings are delivered, or for risk training."
+    "Risk communication: no data yet for the way warnings are delivered, or for risk training.",
+    "Actual flooding: the notes also list “flood exposure frequency(+) → actual risk(+) → evacuation motivation(?)” with Horney et al. (2010b), but that study does not test observed inundation, so it is shown only under historical flooding."
   ],
   children: [
     {
@@ -51,14 +52,9 @@ HM.mechanism({
           label: "Actual flooding",
           title: "Actual flooding caused by the hurricane",
           kind: "metric",
-          metric: { name: "Observed flooding", measure: "Flooded surface water during the event", source: ["modis"], sign: "?" },
+          metric: { name: "Observed flooding", measure: "Observed flooding caused by the hurricane", source: ["modis"], sign: "?" },
           hypotheses: [
-            { dir: "pos", chain: "actual flooding(+) → actual risk(+) → evacuation motivation(+)" },
-            {
-              dir: "ns",
-              chain: "flood exposure frequency(+) → actual risk(+) → evacuation motivation(?)",
-              evidence: "[@horney2010b] found that neither floodplain designation nor perceived property flood risk was significantly associated with evacuation during Hurricane Isabel. This study does not directly test event-specific observed inundation."
-            }
+            { dir: "pos", chain: "actual flooding(+) → actual risk(+) → evacuation motivation(+)" }
           ]
         }
       ]
@@ -70,10 +66,10 @@ HM.mechanism({
         {
           label: "Official warning",
           kind: "group",
-          evidence: "[@liu2025] found higher evacuation rates in the predicted landfall region during Hurricane Ian, potentially associated with earlier evacuation orders, while [@pham2020] identified evacuation-order timing as a significant predictor of departure timing during Hurricane Matthew.",
           children: [
             { label: "Type (mandatory)", kind: "metric", metric: { name: "Warning type", measure: "Mandatory vs. voluntary evacuation order" } },
-            { label: "Timing", kind: "metric", metric: { name: "Warning timing", measure: "Time of order relative to landfall" } },
+            { label: "Timing", kind: "metric", metric: { name: "Warning timing", measure: "Timing of the evacuation order" },
+              evidence: "[@liu2025] found higher evacuation rates in the predicted landfall region during Hurricane Ian, potentially associated with earlier evacuation orders, while [@pham2020] identified evacuation-order timing as a significant predictor of departure timing during Hurricane Matthew." },
             { label: "Way of delivery", kind: "metric", metric: { name: "Warning delivery", measure: "No data" } }
           ]
         },
