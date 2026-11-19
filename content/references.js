@@ -121,10 +121,6 @@ HM.references({
     title: "Evacuation departure timing during Hurricane Matthew",
     journal: "Weather, Climate, and Society", volume: "12", issue: "2", pages: "235–248", doi: "10.1175/WCAS-D-19-0030.1" },
 
-  pham2020b: { type: "report", authors: ["Wilmot, C. G.", "Gudishala, R."], year: 2013, label: "[source to verify]",
-    title: "Development of a time-dependent hurricane evacuation model for the New Orleans area", number: "Report No. FHWA/LA.12/494",
-    publisher: "Louisiana Transportation Research Center", url: "https://rosap.ntl.bts.gov/view/dot/25769",
-    flag: "Cited in the notes as “Pham (2020)” for a 300-household survey (23% stayed to protect the house, 15% to prevent loss). The linked document is this 2013 report by Wilmot and Gudishala, which does not report that survey. The original source needs to be identified." },
 
   rigos2019: { type: "article", authors: ["Rigos, A.", "Mohlin, E.", "Ronchi, E."], year: 2019,
     title: "The cry wolf effect in evacuation: A game-theoretic approach",
