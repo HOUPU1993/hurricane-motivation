@@ -9,7 +9,7 @@ A static, dependency-free website that documents mechanisms driving hurricane ev
 ```
 index.html              # page shell
 assets/style.css        # dark theme (palette follows the Anatomy skill)
-assets/app.js           # renderer: overview, mechanism pages, metrics index, references
+assets/app.js           # renderer: flow figure, decomposition tree, inspector, link viewer, references
 content/manifest.js     # site title/intro + list of content files to load
 content/references.js   # bibliography (HM.references) and data sources (HM.sources)
 content/m1-*.js ...     # one file per mechanism (HM.mechanism)
@@ -19,7 +19,9 @@ content/m1-*.js ...     # one file per mechanism (HM.mechanism)
 
 - Edit text in `content/*.js`. The schema is documented at the top of `content/m1-experience.js`.
 - Cite a work with `[@key]` (key defined in `content/references.js`); use `**bold**` for emphasis.
+- Each mechanism is a tree of nodes (`dimension` → `group` → `metric`). A node can hold `hypotheses`, `metric`, `evidence`, `table`, `note` and `children`; set `open: false` to start it collapsed.
 - Write chains as `a(+) → b(+) → evacuation motivation(-)` and set `dir` to `pos`, `neg` or `ns`.
+- Links open in an in-site viewer. Most publishers block embedding, so those show a summary card with an "open original" button; set `embed: true/false` on a reference to override.
 - Add a mechanism: create `content/m7-xxx.js` and add it to `files` in `content/manifest.js`.
 
 ## Preview locally

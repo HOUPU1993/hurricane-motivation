@@ -3,35 +3,37 @@
   "use strict";
 
   const HM = (window.HM = {
-    site: {},
-    refs: {},
-    srcs: {},
-    mechs: [],
-    references(obj) { Object.assign(HM.refs, obj); },
-    sources(obj) { Object.assign(HM.srcs, obj); },
+    site: {}, refs: {}, srcs: {}, mechs: [], nodes: {}, citedIn: {},
+    references(o) { Object.assign(HM.refs, o); },
+    sources(o) { Object.assign(HM.srcs, o); },
     mechanism(m) { HM.mechs.push(m); },
     boot(cfg) {
       HM.site = cfg.site || {};
-      loadSequential(cfg.files || [], () => { buildCitationIndex(); renderNav(); route(); });
+      loadSequential(cfg.files || [], () => { prepare(); bindGlobal(); route(); });
     }
   });
+
+  const state = { page: null, mech: null, node: null, open: new Map(), rendered: null };
 
   // ---------- loading ----------
   function loadSequential(files, done) {
     if (!files.length) return done();
     const s = document.createElement("script");
     s.src = files[0];
-    s.onload = () => loadSequential(files.slice(1), done);
-    s.onerror = () => { console.error("Failed to load", files[0]); loadSequential(files.slice(1), done); };
+    s.onload = s.onerror = () => loadSequential(files.slice(1), done);
     document.body.appendChild(s);
   }
 
   // ---------- helpers ----------
   const $ = (sel, root = document) => root.querySelector(sel);
+  const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
   const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   const DIR = { pos: "Positive", neg: "Negative", ns: "Non-significant / mixed" };
   const SIGN = { "+": "+", "-": "−", "−": "−", "?": "?" };
   const signCls = (s) => (s === "+" ? "pos" : s === "-" || s === "−" ? "neg" : s === "?" ? "ns" : "");
+  const STATUS = { consistent: "Consistent", mixed: "Mixed evidence", "in-progress": "In progress" };
+  const domain = (u) => { try { return new URL(u).hostname.replace(/^www\./, ""); } catch (e) { return ""; } };
+  const stripTags = (h) => { const d = document.createElement("div"); d.innerHTML = h; return d.textContent || ""; };
 
   // Content text supports [@key] citations and **bold**; content files are trusted HTML.
   function rich(text) {
@@ -40,11 +42,17 @@
       .replace(/\[@([\w-]+)\]/g, (_, k) => {
         const r = HM.refs[k];
         if (!r) return `<span class="cite missing" title="Missing reference: ${esc(k)}">[${esc(k)}]</span>`;
-        return r.url
-          ? `<a class="cite" href="${esc(r.url)}" target="_blank" rel="noopener" title="${esc(r.note || r.label)}">${esc(r.label)}</a>`
-          : `<span class="cite">${esc(r.label)}</span>`;
+        return `<a class="cite" data-ref="${esc(k)}" href="${esc(r.url || "#/references")}" title="${esc(r.note || r.label)}">${esc(r.label)}</a>`;
       })
       .replace(/\*\*(.+?)\*\*/g, "<b>$1</b>");
+  }
+
+  function srcChips(list) {
+    return (list || []).map((k) => {
+      const s = HM.srcs[k];
+      if (!s) return `<span class="chip">${esc(k)}</span>`;
+      return `<a class="chip" data-src="${esc(k)}" href="${esc(s.url || "#/references")}" title="${esc(s.note || "")}">${esc(s.label)}</a>`;
+    }).join("");
   }
 
   function parseChain(str) {
@@ -54,354 +62,357 @@
     });
   }
 
-  function chainHTML(c) {
-    const nodes = parseChain(c.chain);
-    const parts = nodes.map((n, i) => {
-      const last = i === nodes.length - 1;
-      const sign = n.sign ? `<i class="sg">${SIGN[n.sign] || esc(n.sign)}</i>` : "";
-      return `<span class="node${last ? " end" : ""}">${esc(n.label)}${sign}</span>`;
-    });
-    return `<div class="chain" data-dir="${esc(c.dir || "")}">
-      <span class="dir-tag mono">${esc(DIR[c.dir] || "Hypothesis")}</span>
+  function chainHTML(h) {
+    const nodes = parseChain(h.chain);
+    const parts = nodes.map((n, i) => `<span class="node${i === nodes.length - 1 ? " end" : ""}">${esc(n.label)}${n.sign ? `<i class="sg">${SIGN[n.sign] || esc(n.sign)}</i>` : ""}</span>`);
+    return `<div class="chain" data-dir="${esc(h.dir || "")}">
+      <span class="dir-tag mono">${esc(DIR[h.dir] || "Hypothesis")}</span>
       <div class="nodes">${parts.join('<span class="arr" aria-hidden="true"></span>')}</div>
     </div>`;
   }
 
-  function allPathways(m) {
-    return (m.dimensions || []).flatMap((d) => (d.pathways || []).map((p) => ({ ...p, dimension: d.name })));
-  }
+  const legend = () => `<div class="legend mono"><span><i class="dot pos"></i>positive</span><span><i class="dot neg"></i>negative</span><span><i class="dot ns"></i>non-significant / mixed</span></div>`;
 
-  function stats(m) {
-    const pws = allPathways(m);
-    const chains = pws.flatMap((p) => p.chains || []).concat((m.dimensions || []).map((d) => d.intro).filter(Boolean));
-    const count = (d) => chains.filter((c) => c.dir === d).length;
-    return {
-      pathways: pws.length,
-      metrics: pws.reduce((a, p) => a + (p.metrics || []).length, 0),
-      pos: count("pos"), neg: count("neg"), ns: count("ns"),
-      refs: new Set(JSON.stringify(m).match(/\[@[\w-]+\]/g) || []).size
-    };
-  }
-
-  function dirBar(s) {
-    const tot = s.pos + s.neg + s.ns || 1;
-    const seg = (k) => (s[k] ? `<span class="seg ${k}" style="flex:${s[k] / tot}" title="${DIR[k]}: ${s[k]}"></span>` : "");
-    return `<span class="dirbar">${seg("pos")}${seg("neg")}${seg("ns")}</span>`;
-  }
-
-  const STATUS = { consistent: "Consistent", mixed: "Mixed evidence", "in-progress": "In progress" };
-  const statusBadge = (st) => (st ? `<span class="badge mono" data-status="${esc(st)}">${esc(STATUS[st] || st)}</span>` : "");
-
-  const legend = () => `<div class="legend mono">
-      <span><i class="dot pos"></i>positive</span>
-      <span><i class="dot neg"></i>negative</span>
-      <span><i class="dot ns"></i>non-significant / mixed</span>
-    </div>`;
-
-  // ---------- citation index ----------
-  HM.citedIn = {};
-  function buildCitationIndex() {
-    const add = (text, m, where) => {
-      (String(text || "").match(/\[@([\w-]+)\]/g) || []).forEach((t) => {
+  // ---------- model ----------
+  function prepare() {
+    HM.mechs.forEach((m) => {
+      m.root = { label: m.short || m.title, title: m.title, kind: "mechanism", children: m.children || [], key: m.id, path: "", depth: 0, mech: m, parent: null };
+      HM.nodes[m.id] = m.root;
+      const walk = (n, parent, path, depth) => {
+        n.path = path; n.depth = depth; n.parent = parent; n.mech = m;
+        n.key = `${m.id}/${path}`;
+        HM.nodes[n.key] = n;
+        (n.children || []).forEach((c, i) => walk(c, n, path ? `${path}.${i + 1}` : `${i + 1}`, depth + 1));
+      };
+      m.root.children.forEach((c, i) => walk(c, m.root, `${i + 1}`, 1));
+    });
+    // citation index: reference key -> [{ key: node key, text }]
+    const add = (text, node) => {
+      (String(text || "").match(/\[@[\w-]+\]/g) || []).forEach((t) => {
         const k = t.slice(2, -1);
         const list = (HM.citedIn[k] = HM.citedIn[k] || []);
-        if (!list.some((x) => x.m === m.id && x.where === where)) list.push({ m: m.id, where });
+        const sentence = sentenceWith(text, t);
+        if (!list.some((x) => x.key === node.key && x.text === sentence)) list.push({ key: node.key, text: sentence });
       });
     };
-    HM.mechs.forEach((m) => {
-      (m.summary || []).forEach((t) => add(t, m, m.code));
-      (m.dimensions || []).forEach((d) => {
-        if (d.intro) add(d.intro.evidence, m, m.code);
-        (d.pathways || []).forEach((p) => {
-          add(p.evidence, m, p.id);
-          (p.chains || []).forEach((c) => add(c.evidence, m, p.id));
-        });
-      });
+    Object.values(HM.nodes).forEach((n) => {
+      if (n.kind === "mechanism") (n.mech.summary || []).forEach((t) => add(t, n));
+      (n.hypotheses || []).forEach((h) => add(h.evidence, n));
+      add(n.evidence, n);
     });
   }
 
-  // ---------- navigation ----------
-  function renderNav() {
-    const items = [
-      `<a href="#/" data-r="home"><span class="mono">00</span>Overview</a>`,
-      `<div class="nav-label mono">Mechanisms</div>`,
-      ...HM.mechs.map((m) => `<a href="#/m/${m.id}" data-r="m/${m.id}"><span class="mono">${esc(m.code)}</span>${esc(m.short || m.title)}</a>`),
-      `<div class="nav-label mono">Index</div>`,
-      `<a href="#/metrics" data-r="metrics"><span class="mono">Ix</span>Metrics &amp; data</a>`,
-      `<a href="#/references" data-r="references"><span class="mono">Rf</span>References</a>`
-    ];
-    $("#nav").innerHTML = items.join("");
+  function sentenceWith(text, token) {
+    const parts = String(text).split(/(?<=[.;])\s+(?=[A-Z\[“])/);
+    return parts.find((p) => p.includes(token)) || text;
   }
 
-  function setActive(key) {
-    document.querySelectorAll("#nav a").forEach((a) => a.classList.toggle("active", a.dataset.r === key));
-    document.body.classList.remove("nav-open");
+  function stats(m) {
+    const all = Object.values(HM.nodes).filter((n) => n.mech === m);
+    const hyps = all.flatMap((n) => n.hypotheses || []);
+    const c = (d) => hyps.filter((h) => h.dir === d).length;
+    return { nodes: all.length - 1, metrics: all.filter((n) => n.metric).length, hyps: hyps.length, pos: c("pos"), neg: c("neg"), ns: c("ns") };
   }
 
-  // ---------- views ----------
+  const isOpen = (n) => (state.open.has(n.key) ? state.open.get(n.key) : n.open !== false);
+  const pathOf = (n) => { const p = []; for (let x = n; x; x = x.parent) p.unshift(x); return p; };
+  const hrefOf = (n) => `#/${n.mech.id}${n.path ? "/" + n.path : ""}`;
+
+  // ---------- page: overview ----------
   function viewHome() {
     const s = HM.site;
-    const cards = HM.mechs.map((m) => {
-      const st = stats(m);
-      return `<a class="mcard" href="#/m/${m.id}">
-        <div class="mcard-top"><span class="mono code">${esc(m.code)}</span>${statusBadge(m.status)}</div>
-        <h3>${esc(m.title)}</h3>
-        <p>${esc(m.question || clip(stripTags(rich((m.summary || [""])[0])), 140))}</p>
-        <div class="mcard-foot mono">
-          <span>${st.pathways} pathways</span><span>${st.metrics} metrics</span>${dirBar(st)}
-        </div>
-      </a>`;
-    }).join("");
-
     return `
       <header class="hero">
         <div class="kicker mono">${esc(s.kicker || "")}</div>
         <h1>${esc(s.title || "")}</h1>
         ${(s.intro || []).map((p) => `<p class="lead">${rich(p)}</p>`).join("")}
       </header>
-      ${figureCard()}
-      <section>
-        <div class="sec-head"><h2>Mechanisms</h2>${legend()}</div>
-        <div class="mgrid">${cards}</div>
-      </section>
+      ${figureFlow()}
+      <div id="decomp"></div>
       <footer class="foot mono">Updated ${esc(s.updated || "")} · ${esc(s.author || "")}</footer>`;
   }
 
-  function clip(t, n) { return t.length > n ? t.slice(0, n).replace(/\s+\S*$/, "") + "…" : t; }
-  function stripTags(h) { const d = document.createElement("div"); d.innerHTML = h; return d.textContent || ""; }
-
-  // Fig 1: mechanisms (modules) wired into the motivation hub, then to outcomes.
-  function figureCard() {
+  // Fig 1: mechanisms wired into the motivation hub, then to outcomes.
+  function figureFlow() {
     const n = HM.mechs.length;
-    const rowH = 56, top = 28, W = 880, H = top * 2 + n * rowH - 16;
-    const mx = 24, mw = 300, mh = 40;
-    const hx = 560, hw = 170, hh = 76, hy = H / 2 - hh / 2;
-    const ox = 790, ow = 80, oh = 44, oy = H / 2 - oh / 2;
+    const rowH = 56, top = 24, W = 1060, H = top * 2 + n * rowH - 16;
+    const mx = 20, mw = 300, mh = 40;
+    const hx = 640, hw = 190, hh = 76, hy = H / 2 - hh / 2;
+    const ox = 930, ow = 110, oh = 46, oy = H / 2 - oh / 2;
     let wires = "", mods = "";
     HM.mechs.forEach((m, i) => {
       const y = top + i * rowH, cy = y + mh / 2;
       const ty = hy + 14 + (i * (hh - 28)) / Math.max(n - 1, 1);
-      const x1 = mx + mw, x2 = hx;
+      const x1 = mx + mw, x2 = hx, d = `M${x1} ${cy} C ${x1 + 170} ${cy}, ${x2 - 170} ${ty}, ${x2} ${ty}`;
       const st = stats(m);
-      wires += `<g class="wire" data-i="${i}">
-        <path d="M${x1} ${cy} C ${x1 + 150} ${cy}, ${x2 - 150} ${ty}, ${x2} ${ty}"/>
-        <path class="flow" d="M${x1} ${cy} C ${x1 + 150} ${cy}, ${x2 - 150} ${ty}, ${x2} ${ty}"/>
-        <circle class="term" cx="${x1}" cy="${cy}" r="2.6"/><circle class="term" cx="${x2}" cy="${ty}" r="2.6"/>
-      </g>`;
+      wires += `<g class="wire" data-m="${m.id}"><path d="${d}"/><path class="flow" d="${d}"/>
+        <circle class="term" cx="${x1}" cy="${cy}" r="2.6"/><circle class="term" cx="${x2}" cy="${ty}" r="2.6"/></g>`;
       const ticks = ["pos", "neg", "ns"].flatMap((k) => Array(st[k]).fill(k))
         .map((k, j) => `<circle class="tick ${k}" cx="${mx + mw - 14 - j * 6.5}" cy="${cy}" r="2.2"/>`).join("");
-      mods += `<a href="#/m/${m.id}" class="mod" data-i="${i}">
+      mods += `<a href="#/${m.id}" class="mod" data-m="${m.id}" aria-label="${esc(m.title)}">
         <rect x="${mx}" y="${y}" width="${mw}" height="${mh}" rx="7"/>
         <line x1="${mx + 44}" y1="${y + 8}" x2="${mx + 44}" y2="${y + mh - 8}"/>
         <text class="code" x="${mx + 14}" y="${cy + 4}">${esc(m.code)}</text>
-        <text class="name" x="${mx + 56}" y="${cy + 4}">${esc(m.short || m.title)}</text>
-        ${ticks}
-        <circle class="screw" cx="${mx + 5}" cy="${y + 5}" r=".9"/><circle class="screw" cx="${mx + mw - 5}" cy="${y + 5}" r=".9"/>
-        <circle class="screw" cx="${mx + 5}" cy="${y + mh - 5}" r=".9"/><circle class="screw" cx="${mx + mw - 5}" cy="${y + mh - 5}" r=".9"/>
+        <text class="name" x="${mx + 56}" y="${cy + 4}">${esc(m.short || m.title)}</text>${ticks}
+        ${[[5, 5], [mw - 5, 5], [5, mh - 5], [mw - 5, mh - 5]].map(([a, b]) => `<circle class="screw" cx="${mx + a}" cy="${y + b}" r=".9"/>`).join("")}
       </a>`;
     });
-    const hub = `<g class="hub">
-      <rect x="${hx}" y="${hy}" width="${hw}" height="${hh}" rx="10"/>
+    const hub = `<g class="hub"><rect x="${hx}" y="${hy}" width="${hw}" height="${hh}" rx="10"/>
       <rect class="inner" x="${hx + 6}" y="${hy + 6}" width="${hw - 12}" height="${hh - 12}" rx="6"/>
       <text class="lbl" x="${hx + hw / 2}" y="${hy + hh / 2 - 4}" text-anchor="middle">EVACUATION</text>
-      <text class="lbl" x="${hx + hw / 2}" y="${hy + hh / 2 + 12}" text-anchor="middle">MOTIVATION</text>
-    </g>
-    <g class="wire out">
-      <path d="M${hx + hw} ${H / 2} L ${ox} ${H / 2}"/><path class="flow" d="M${hx + hw} ${H / 2} L ${ox} ${H / 2}"/>
-      <circle class="term" cx="${hx + hw}" cy="${H / 2}" r="2.6"/><circle class="term" cx="${ox}" cy="${H / 2}" r="2.6"/>
-    </g>
-    <g class="outc">
-      <rect x="${ox}" y="${oy}" width="${ow}" height="${oh}" rx="7"/>
-      <text x="${ox + ow / 2}" y="${oy + 19}" text-anchor="middle">evacuation</text>
-      <text x="${ox + ow / 2}" y="${oy + 33}" text-anchor="middle">outcomes</text>
-    </g>`;
-    const tot = HM.mechs.reduce((a, m) => { const s = stats(m); a.p += s.pathways; a.k += s.metrics; return a; }, { p: 0, k: 0 });
-    return `<figure class="fig">
+      <text class="lbl" x="${hx + hw / 2}" y="${hy + hh / 2 + 12}" text-anchor="middle">MOTIVATION</text></g>
+      <g class="wire out"><path d="M${hx + hw} ${H / 2} L ${ox} ${H / 2}"/><path class="flow" d="M${hx + hw} ${H / 2} L ${ox} ${H / 2}"/>
+      <circle class="term" cx="${hx + hw}" cy="${H / 2}" r="2.6"/><circle class="term" cx="${ox}" cy="${H / 2}" r="2.6"/></g>
+      <g class="outc"><rect x="${ox}" y="${oy}" width="${ow}" height="${oh}" rx="7"/>
+      <text x="${ox + ow / 2}" y="${oy + 20}" text-anchor="middle">evacuation</text><text x="${ox + ow / 2}" y="${oy + 34}" text-anchor="middle">outcomes</text></g>`;
+    const tot = HM.mechs.reduce((a, m) => { const s = stats(m); a.n += s.nodes; a.k += s.metrics; a.h += s.hyps; return a; }, { n: 0, k: 0, h: 0 });
+    return `<figure class="fig" id="fig1">
       <div class="fig-bar mono"><span>Fig 1</span><span>Motivation-centered framework</span></div>
-      <svg class="fig-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="Six mechanisms feed evacuation motivation, which drives evacuation outcomes">${wires}${hub}${mods}</svg>
-      <div class="fig-bar mono"><span>select a mechanism</span><span>${n} mechanisms · ${tot.p} pathways · ${tot.k} metrics</span></div>
+      <div class="fig-scroll"><svg class="fig-svg" viewBox="0 0 ${W} ${H}" style="min-width:720px" role="img" aria-label="Mechanisms feeding evacuation motivation">${wires}${hub}${mods}</svg></div>
+      <div class="fig-bar mono"><span class="hint">select a mechanism to unfold it</span><span>${n} mechanisms · ${tot.k} metrics · ${tot.h} hypotheses</span></div>
     </figure>
-    <figcaption class="cap">Each module is a source of motivation; dots inside a module count its hypothesized chains by direction.</figcaption>`;
+    <div class="cap-row">${legend()}<span class="cap">Dots in each module count its hypotheses by direction.</span></div>`;
   }
 
-  function sourceChips(list) {
-    return (list || []).map((k) => {
-      const s = HM.srcs[k];
-      if (!s) return `<span class="chip">${esc(k)}</span>`;
-      return s.url ? `<a class="chip" href="${esc(s.url)}" target="_blank" rel="noopener" title="${esc(s.note || "")}">${esc(s.label)}</a>`
-                   : `<span class="chip" title="${esc(s.note || "")}">${esc(s.label)}</span>`;
-    }).join("");
+  // Fig 2: decomposition tree of the selected mechanism.
+  const T = { NW: 190, RW: 156, GAP: 34, P: 52, H: 42 };
+  const colX = (d) => (d === 0 ? 0 : T.RW + T.GAP + (d - 1) * (T.NW + T.GAP));
+
+  function layoutTree(root) {
+    let row = 0, maxD = 0;
+    const place = (n, d) => {
+      n._d = d; maxD = Math.max(maxD, d);
+      const kids = n.children && n.children.length && isOpen(n) ? n.children : [];
+      if (kids.length) { kids.forEach((k) => place(k, d + 1)); n._y = (kids[0]._y + kids[kids.length - 1]._y) / 2; }
+      else n._y = row++ * T.P + T.H / 2;
+      n._kids = kids;
+    };
+    place(root, 0);
+    return { w: colX(maxD) + T.NW + 8, h: Math.max(row * T.P - (T.P - T.H), T.H) };
   }
 
-  function metricsTable(metrics) {
-    if (!metrics || !metrics.length) return "";
-    const rows = metrics.map((x) => `<tr>
-        <td class="mname">${esc(x.name)}</td>
-        <td>${x.measure || '<span class="na">—</span>'}</td>
-        <td>${sourceChips(x.source) || '<span class="na">—</span>'}</td>
-        <td class="sign ${signCls(x.sign)}">${x.sign ? SIGN[x.sign] || esc(x.sign) : ""}</td>
-      </tr>`).join("");
-    return `<div class="block"><div class="block-label mono">Metrics</div>
-      <div class="tbl-wrap"><table class="tbl"><thead><tr><th>Metric</th><th>Measure</th><th>Data source</th><th title="Expected sign on evacuation motivation">Exp.</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
+  function nodeMeta(n) {
+    if (n.kind === "mechanism") return n.mech.code;
+    const bits = [n.kind || "node"];
+    if (n.metric && n.metric.source) bits.push((n.metric.source.map((k) => (HM.srcs[k] || {}).label || k)).join(", "));
+    else if (n.children && n.children.length) bits.push(`${n.children.length}`);
+    return bits.join(" · ");
   }
 
-  function extraTable(t) {
-    if (!t) return "";
-    return `<div class="block"><div class="block-label mono">Context</div><div class="tbl-wrap"><table class="tbl small">
-      <thead><tr>${t.columns.map((c) => `<th>${esc(c)}</th>`).join("")}</tr></thead>
-      <tbody>${t.rows.map((r) => `<tr>${r.map((c) => `<td>${rich(c)}</td>`).join("")}</tr>`).join("")}</tbody></table></div></div>`;
+  function treeHTML(m) {
+    const root = m.root;
+    const { w, h } = layoutTree(root);
+    let wires = "", nodes = "";
+    const visit = (n) => {
+      const x = colX(n._d), nw = n._d === 0 ? T.RW : T.NW, y = n._y;
+      n._kids.forEach((c) => {
+        const x1 = x + nw, x2 = colX(c._d), y2 = c._y, mid = (x1 + x2) / 2;
+        wires += `<path d="M${x1} ${y} C ${mid} ${y}, ${mid} ${y2}, ${x2} ${y2}"/><circle class="term" cx="${x2}" cy="${y2}" r="2.4"/>`;
+        visit(c);
+      });
+      const hasKids = n.children && n.children.length;
+      const dots = (n.hypotheses || []).map((hh) => `<i class="dot ${esc(hh.dir)}"></i>`).join("");
+      const sign = n.metric && n.metric.sign ? `<i class="nsign ${signCls(n.metric.sign)}">${SIGN[n.metric.sign]}</i>` : "";
+      const toggle = hasKids && n._d > 0 ? `<span class="tg mono" data-toggle="${esc(n.key)}" title="${isOpen(n) ? "collapse" : "expand"}">${isOpen(n) ? "−" : "+" + n.children.length}</span>` : "";
+      nodes += `<a class="tn k-${esc(n.kind)}${state.node === n.key ? " sel" : ""}" href="${hrefOf(n)}" data-key="${esc(n.key)}" title="${esc(n.title || n.label)}"
+          style="left:${x}px;top:${y - T.H / 2}px;width:${nw}px">
+        <span class="tn-l">${esc(n.label)}</span>
+        <span class="tn-m mono"><span class="tn-meta">${esc(nodeMeta(n))}</span><span class="tn-d">${dots}${sign}</span></span>
+        ${toggle}
+      </a>`;
+      if (hasKids && n._d > 0) wires += `<circle class="term" cx="${x + nw}" cy="${y}" r="2.4"/>`;
+    };
+    visit(root);
+    return `<div class="tree" style="width:${w}px;height:${h}px">
+      <svg class="tree-svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" aria-hidden="true">${wires}</svg>${nodes}</div>`;
   }
 
-  function pathwayCard(p) {
-    const chains = p.chains || [];
-    const evid = chains.filter((c) => c.evidence)
-      .map((c) => `<div class="ev" data-dir="${esc(c.dir)}"><i class="dot ${esc(c.dir)}"></i><p>${rich(c.evidence)}</p></div>`).join("")
-      + (p.evidence ? `<div class="ev"><i class="dot"></i><p>${rich(p.evidence)}</p></div>` : "");
-    const nMetrics = (p.metrics || []).length;
-    const hasDetail = evid || nMetrics || p.table || p.note;
-    const detailLabel = [evid ? "evidence" : "", nMetrics ? `${nMetrics} metric${nMetrics > 1 ? "s" : ""}` : "", p.table ? "context" : ""].filter(Boolean).join(" · ");
-    return `<article class="pw" id="p-${esc(p.id)}">
-      <header class="pw-head"><span class="mono pid">${esc(p.id)}</span><h3>${esc(p.title)}</h3></header>
-      ${chains.map(chainHTML).join("")}
-      ${hasDetail ? `<details class="pw-more">
-        <summary class="mono">${esc(detailLabel || "details")}</summary>
-        ${evid ? `<div class="block"><div class="block-label mono">Evidence</div>${evid}</div>` : ""}
-        ${metricsTable(p.metrics)}
-        ${extraTable(p.table)}
-        ${p.note ? `<p class="note">${rich(p.note)}</p>` : ""}
-      </details>` : `<p class="note">No metrics or evidence recorded yet.</p>`}
-    </article>`;
-  }
-
-  function viewMechanism(id, focus) {
-    const i = HM.mechs.findIndex((m) => m.id === id);
-    const m = HM.mechs[i];
-    if (!m) return viewNotFound();
+  function renderDecomp() {
+    const box = $("#decomp");
+    if (!box) return;
+    const m = HM.mechs.find((x) => x.id === state.mech);
+    $$(".fig .mod").forEach((a) => a.classList.toggle("sel", a.dataset.m === state.mech));
+    $$(".fig .wire").forEach((w) => w.classList.toggle("on", w.dataset.m === state.mech));
+    $("#fig1")?.classList.toggle("has-sel", !!m);
+    if (!m) { box.innerHTML = ""; state.rendered = null; return; }
     const st = stats(m);
-    const prev = HM.mechs[i - 1], next = HM.mechs[i + 1];
-    const dims = (m.dimensions || []).map((d, k) => `<section class="dim">
-        <div class="dim-head"><span class="mono">D${k + 1}</span><h2>${esc(d.name)}</h2></div>
-        ${d.intro ? `<div class="intro"><div class="block-label mono">Dimension hypothesis</div>${chainHTML(d.intro)}
-          ${d.intro.evidence ? `<div class="ev" data-dir="${esc(d.intro.dir)}"><i class="dot ${esc(d.intro.dir)}"></i><p>${rich(d.intro.evidence)}</p></div>` : ""}</div>` : ""}
-        ${(d.pathways || []).map(pathwayCard).join("")}
-      </section>`).join("");
-
-    return `
-      <div class="crumb mono"><a href="#/">Overview</a><span>/</span>${esc(m.code)}</div>
-      <header class="mhead">
-        <div class="mhead-top"><span class="mono code big">${esc(m.code)}</span>${statusBadge(m.status)}</div>
-        <h1>${esc(m.title)}</h1>
-        ${m.question ? `<p class="question">${esc(m.question)}</p>` : ""}
-      </header>
-      <div class="readout mono">
-        <div><b>${st.pathways}</b><span>pathways</span></div>
-        <div><b>${st.metrics}</b><span>metrics</span></div>
-        <div><b>${st.refs}</b><span>references</span></div>
-        <div class="rd-dir"><span><i class="dot pos"></i>${st.pos}</span><span><i class="dot neg"></i>${st.neg}</span><span><i class="dot ns"></i>${st.ns}</span><span>chains</span></div>
-      </div>
-      <section class="summary">${(m.summary || []).map((p) => `<p>${rich(p)}</p>`).join("")}</section>
-      ${(m.notes || []).length ? `<aside class="notes"><div class="block-label mono">Open notes</div><ul>${m.notes.map((n) => `<li>${rich(n)}</li>`).join("")}</ul></aside>` : ""}
-      <div class="toolbar">${legend()}<button class="btn mono" id="toggle-all">expand all</button></div>
-      ${dims}
-      <nav class="pager">
-        ${prev ? `<a href="#/m/${prev.id}"><span class="mono">← ${esc(prev.code)}</span>${esc(prev.title)}</a>` : "<span></span>"}
-        ${next ? `<a class="r" href="#/m/${next.id}"><span class="mono">${esc(next.code)} →</span>${esc(next.title)}</a>` : "<span></span>"}
-      </nav>`;
+    if (state.rendered !== m.id) {
+      box.innerHTML = `<section class="dec">
+        <figure class="fig">
+          <div class="fig-bar mono"><span>Fig 2 · ${esc(m.code)}</span><span>${m.status ? `<span class="badge" data-status="${esc(m.status)}">${esc(STATUS[m.status] || m.status)}</span>` : ""}</span></div>
+          <header class="dec-head">
+            <h2>${esc(m.title)}</h2>
+            ${m.question ? `<p class="question">${esc(m.question)}</p>` : ""}
+          </header>
+          <div class="tree-scroll" id="tree-wrap"></div>
+          <div class="dec-foot">
+            <details class="bg" open><summary class="mono">literature summary</summary><div class="summary">${(m.summary || []).map((p) => `<p>${rich(p)}</p>`).join("")}</div></details>
+            ${(m.notes || []).length ? `<aside class="notes"><div class="block-label mono">Open notes</div><ul>${m.notes.map((x) => `<li>${rich(x)}</li>`).join("")}</ul></aside>` : ""}
+          </div>
+          <div class="fig-bar mono"><span class="hint">select a node to inspect · +/− to unfold</span>
+            <span>${st.metrics} metrics · ${st.hyps} hypotheses · <i class="dot pos"></i>${st.pos} <i class="dot neg"></i>${st.neg} <i class="dot ns"></i>${st.ns}</span></div>
+        </figure>
+      </section>`;
+      state.rendered = m.id;
+    }
+    $("#tree-wrap").innerHTML = treeHTML(m);
   }
 
-  function viewMetrics() {
-    const rows = HM.mechs.flatMap((m) => allPathways(m).flatMap((p) => (p.metrics || []).map((x) => ({ m, p, x }))));
-    const body = rows.map(({ m, p, x }) => `<tr data-text="${esc([m.code, m.title, p.dimension, p.title, x.name, stripTags(x.measure || ""), (x.source || []).map((k) => (HM.srcs[k] || {}).label || k).join(" ")].join(" ").toLowerCase())}">
-        <td class="mono"><a href="#/m/${m.id}/${esc(p.id)}">${esc(p.id)}</a></td>
-        <td>${esc(p.dimension)}<div class="sub">${esc(p.title)}</div></td>
-        <td class="mname">${esc(x.name)}</td>
-        <td>${x.measure || '<span class="na">—</span>'}</td>
-        <td>${sourceChips(x.source) || '<span class="na">—</span>'}</td>
-        <td class="sign ${signCls(x.sign)}">${x.sign ? SIGN[x.sign] || esc(x.sign) : ""}</td>
-      </tr>`).join("");
-    return `
-      <div class="crumb mono"><a href="#/">Overview</a><span>/</span>Metrics</div>
-      <header class="mhead"><h1>Metrics &amp; data</h1>
-        <p class="question">All operationalized metrics across mechanisms, with measures, data sources and expected sign on evacuation motivation.</p></header>
-      <div class="toolbar"><input id="filter" class="filter mono" placeholder="filter: e.g. ACS, flood, tenure" aria-label="Filter metrics">${legend()}</div>
-      <div class="tbl-wrap"><table class="tbl" id="mtbl"><thead><tr><th>ID</th><th>Dimension / pathway</th><th>Metric</th><th>Measure</th><th>Data source</th><th>Exp.</th></tr></thead><tbody>${body}</tbody></table></div>
-      <p class="note mono" id="mcount">${rows.length} metrics</p>`;
+  // ---------- inspector ----------
+  function openInspector(n) {
+    const ins = $("#inspector");
+    if (!n) { ins.classList.remove("on"); ins.setAttribute("aria-hidden", "true"); document.body.classList.remove("ins-open"); return; }
+    const trail = pathOf(n);
+    $("#ins-crumb").innerHTML = trail.map((x) => `<a href="${hrefOf(x)}">${esc(x.kind === "mechanism" ? x.mech.code : x.label)}</a>`).join("<span>/</span>");
+    const inherited = trail.slice(0, -1).reverse().find((x) => (x.hypotheses || []).length);
+    const metric = n.metric;
+    const kids = n.children || [];
+    let html = `<div class="ins-kind mono">${esc(n.kind === "mechanism" ? n.mech.code + " · mechanism" : n.kind || "node")}</div>
+      <h2>${esc(n.title || n.label)}</h2>`;
+
+    if (n.kind === "mechanism") {
+      html += n.mech.question ? `<p class="question">${esc(n.mech.question)}</p>` : "";
+      html += `<div class="sec">${(n.mech.summary || []).map((p) => `<p>${rich(p)}</p>`).join("")}</div>`;
+    }
+    if ((n.hypotheses || []).length) {
+      html += `<div class="sec"><div class="block-label mono">Hypotheses</div>${n.hypotheses.map((h) =>
+        chainHTML(h) + (h.evidence ? `<div class="ev"><i class="dot ${esc(h.dir)}"></i><p>${rich(h.evidence)}</p></div>` : `<p class="na mono small noev">no evidence recorded</p>`)).join("")}</div>`;
+    } else if (inherited && n.kind !== "mechanism") {
+      html += `<div class="sec inh"><div class="block-label mono">Hypothesis inherited from <a href="${hrefOf(inherited)}">${esc(inherited.label)}</a></div>${inherited.hypotheses.map((h) => chainHTML(h) + (h.evidence ? `<div class="ev"><i class="dot ${esc(h.dir)}"></i><p>${rich(h.evidence)}</p></div>` : "")).join("")}</div>`;
+    }
+    if (metric) {
+      html += `<div class="sec"><div class="block-label mono">Metric construction</div>
+        <dl class="kv">
+          <dt>Metric</dt><dd class="strong">${esc(metric.name || n.label)}</dd>
+          <dt>Measure</dt><dd>${metric.measure || '<span class="na">to be specified</span>'}</dd>
+          <dt>Expected sign</dt><dd>${metric.sign ? `<span class="sign ${signCls(metric.sign)}">${SIGN[metric.sign]}</span> on evacuation motivation` : '<span class="na">—</span>'}</dd>
+          <dt>Data source</dt><dd>${srcChips(metric.source) || '<span class="na">to be specified</span>'}</dd>
+        </dl></div>`;
+    }
+    if (n.evidence) html += `<div class="sec"><div class="block-label mono">Evidence</div><div class="ev"><i class="dot"></i><p>${rich(n.evidence)}</p></div></div>`;
+    if (n.table) html += `<div class="sec"><div class="block-label mono">Context</div><table class="tbl"><thead><tr>${n.table.columns.map((c) => `<th>${esc(c)}</th>`).join("")}</tr></thead>
+      <tbody>${n.table.rows.map((r) => `<tr>${r.map((c) => `<td>${rich(c)}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`;
+    if (n.note) html += `<p class="note">${rich(n.note)}</p>`;
+    if (kids.length) html += `<div class="sec"><div class="block-label mono">Contains</div><div class="kids">${kids.map((k) =>
+      `<a class="kid" href="${hrefOf(k)}"><span>${esc(k.label)}</span><span class="mono">${esc(k.kind || "")}${k.metric && k.metric.sign ? ` <i class="nsign ${signCls(k.metric.sign)}">${SIGN[k.metric.sign]}</i>` : ""}</span></a>`).join("")}</div></div>`;
+
+    $("#ins-body").innerHTML = html;
+    $("#ins-body").scrollTop = 0;
+    ins.classList.add("on"); ins.setAttribute("aria-hidden", "false");
+    document.body.classList.add("ins-open");
   }
 
+  // ---------- viewer ----------
+  const NOEMBED = /(sciencedirect|elsevier|wiley|springer|tandfonline|sagepub|ascelibrary|ametsoc|aphapublications|ncbi\.nlm\.nih|proquest|books\.google|doi\.org|census\.gov|cloudfront|jstor|insuranceforgood)/i;
+
+  function openViewer(kind, key) {
+    const item = kind === "ref" ? HM.refs[key] : HM.srcs[key];
+    if (!item) return;
+    const v = $("#viewer"), body = $("#viewer-body");
+    $("#viewer-title").innerHTML = `${esc(kind === "ref" ? "reference" : "data source")} · <b>${esc(item.label)}</b>`;
+    const open = $("#viewer-open");
+    if (item.url) { open.href = item.url; open.hidden = false; } else open.hidden = true;
+    const embed = item.url && (item.embed === true || (item.embed !== false && !NOEMBED.test(item.url)));
+    const cited = kind === "ref" ? (HM.citedIn[key] || []) : sourceUses(key);
+    const card = `<div class="vcard">
+        <div class="kicker mono">${esc(domain(item.url) || "no link")}</div>
+        <h2>${esc(item.label)}</h2>
+        ${item.note ? `<p>${esc(item.note)}</p>` : ""}
+        ${item.url ? `<p class="mono small url">${esc(item.url)}</p>` : ""}
+        ${!embed && item.url ? `<p class="note">This site does not allow pages to be embedded, so it opens in a new tab.</p>
+          <a class="btn mono" href="${esc(item.url)}" target="_blank" rel="noopener">open original ↗</a>` : ""}
+        ${cited.length ? `<div class="block-label mono" style="margin-top:28px">Used in this framework</div>
+          <ul class="uses">${cited.map((c) => { const n = HM.nodes[c.key]; return `<li><a href="${hrefOf(n)}" data-close>${esc((n.kind === "mechanism" ? n.mech.code + " · literature summary" : pathOf(n).map((x) => x.kind === "mechanism" ? x.mech.code : x.label).join(" / ")))}</a>${c.text ? `<p>${rich(c.text)}</p>` : ""}</li>`; }).join("")}</ul>` : ""}
+      </div>`;
+    body.innerHTML = embed
+      ? `<div class="vsplit"><div class="frame"><p class="frame-hint mono">loading… if the page stays blank, the site blocks embedding — use “open in new tab”.</p>
+          <iframe src="${esc(item.url)}" title="${esc(item.label)}" referrerpolicy="no-referrer"></iframe></div>${card}</div>`
+      : card;
+    v.classList.add("on"); v.setAttribute("aria-hidden", "false");
+  }
+  function closeViewer() { const v = $("#viewer"); v.classList.remove("on"); v.setAttribute("aria-hidden", "true"); $("#viewer-body").innerHTML = ""; }
+
+  function sourceUses(k) {
+    return Object.values(HM.nodes).filter((n) => n.metric && (n.metric.source || []).includes(k)).map((n) => ({ key: n.key, text: "" }));
+  }
+
+  // ---------- page: references ----------
   function viewReferences() {
-    const citeLinks = (k) => (HM.citedIn[k] || []).map((c) => {
-      const href = /^\d/.test(c.where) ? `#/m/${c.m}/${c.where}` : `#/m/${c.m}`;
-      return `<a class="chip" href="${href}">${esc(c.where)}</a>`;
-    }).join("");
-    const domain = (u) => { try { return new URL(u).hostname.replace(/^www\./, ""); } catch (e) { return ""; } };
+    const used = (k) => (HM.citedIn[k] || []).filter((c, i, a) => a.findIndex((x) => x.key === c.key) === i)
+      .map((c) => { const n = HM.nodes[c.key]; return `<a class="chip" href="${hrefOf(n)}">${esc(n.kind === "mechanism" ? n.mech.code : n.mech.code + " / " + n.label)}</a>`; }).join("");
     const refs = Object.entries(HM.refs).sort((a, b) => a[1].label.localeCompare(b[1].label)).map(([k, r]) => `<li>
-        <div class="ref-main">${r.url ? `<a href="${esc(r.url)}" target="_blank" rel="noopener">${esc(r.label)}</a>` : esc(r.label)}
-          <span class="mono dom">${esc(domain(r.url))}</span></div>
+        <div class="ref-main"><a class="cite" data-ref="${esc(k)}" href="${esc(r.url || "#")}">${esc(r.label)}</a><span class="mono dom">${esc(domain(r.url))}</span></div>
         ${r.note ? `<div class="ref-note">${esc(r.note)}</div>` : ""}
-        <div class="ref-cited">${citeLinks(k) || '<span class="na mono">not cited</span>'}</div>
-      </li>`).join("");
-    const srcs = Object.values(HM.srcs).map((s) => `<li>
-        <div class="ref-main">${s.url ? `<a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.label)}</a>` : esc(s.label)}
-          <span class="mono dom">${esc(s.url ? domain(s.url) : "")}</span></div>
+        <div class="ref-cited">${used(k) || '<span class="na mono">not cited</span>'}</div></li>`).join("");
+    const srcs = Object.entries(HM.srcs).map(([k, s]) => `<li>
+        <div class="ref-main"><a class="cite" data-src="${esc(k)}" href="${esc(s.url || "#")}">${esc(s.label)}</a><span class="mono dom">${esc(domain(s.url))}</span></div>
         ${s.note ? `<div class="ref-note">${esc(s.note)}</div>` : ""}
-      </li>`).join("");
-    return `
-      <div class="crumb mono"><a href="#/">Overview</a><span>/</span>References</div>
-      <header class="mhead"><h1>References</h1><p class="question">Literature cited in the framework, with links to the pathways that cite each work.</p></header>
+        <div class="ref-cited">${sourceUses(k).map((c) => { const n = HM.nodes[c.key]; return `<a class="chip" href="${hrefOf(n)}">${esc(n.mech.code + " / " + n.label)}</a>`; }).join("")}</div></li>`).join("");
+    return `<header class="hero"><div class="kicker mono">Index</div><h1>References</h1>
+        <p class="lead">Literature and data sources used in the framework. Select an entry to preview it; chips link to the nodes that use it.</p></header>
       <section><div class="sec-head"><h2>Literature</h2><span class="mono note">${Object.keys(HM.refs).length} works</span></div><ul class="refs">${refs}</ul></section>
-      <section><div class="sec-head"><h2>Data sources</h2></div><ul class="refs">${srcs}</ul></section>`;
-  }
-
-  function viewNotFound() {
-    return `<div class="crumb mono"><a href="#/">Overview</a></div><h1>Not found</h1><p>This page does not exist.</p>`;
+      <section><div class="sec-head"><h2>Data sources</h2><span class="mono note">${Object.keys(HM.srcs).length} sources</span></div><ul class="refs">${srcs}</ul></section>`;
   }
 
   // ---------- router ----------
   function route() {
-    const parts = (location.hash.replace(/^#\/?/, "") || "").split("/").filter(Boolean);
+    const parts = location.hash.replace(/^#\/?/, "").split("/").filter(Boolean);
     const app = $("#app");
-    let key = "home";
-    if (parts[0] === "m") { key = `m/${parts[1]}`; app.innerHTML = viewMechanism(parts[1]); }
-    else if (parts[0] === "metrics") { key = "metrics"; app.innerHTML = viewMetrics(); }
-    else if (parts[0] === "references") { key = "references"; app.innerHTML = viewReferences(); }
-    else if (!parts.length) { app.innerHTML = viewHome(); }
-    else { app.innerHTML = viewNotFound(); }
-    setActive(key);
-    document.title = (key === "home" ? "" : stripTags($("h1", app)?.innerHTML || "") + " · ") + "Evacuation Motivation Framework";
-    bindView();
-    const focus = parts[0] === "m" && parts[2] ? document.getElementById("p-" + parts[2]) : null;
-    if (focus) {
-      const d = $("details", focus); if (d) d.open = true;
-      focus.classList.add("flash");
-      focus.scrollIntoView({ block: "start" });
-    } else window.scrollTo(0, 0);
+    closeViewer();
+    if (parts[0] === "references") {
+      state.page = "references"; state.rendered = null;
+      app.innerHTML = viewReferences(); openInspector(null); window.scrollTo(0, 0);
+    } else {
+      const mech = HM.mechs.find((m) => m.id === parts[0]) ? parts[0] : null;
+      const nodeKey = mech && parts[1] ? `${mech}/${parts[1]}` : mech;
+      if (state.page !== "home") { app.innerHTML = viewHome(); state.page = "home"; state.rendered = null; bindFigure(); }
+      const changedMech = state.mech !== mech;
+      state.mech = mech;
+      state.node = nodeKey && HM.nodes[nodeKey] ? nodeKey : null;
+      if (state.node) pathOf(HM.nodes[state.node]).slice(0, -1).forEach((x) => state.open.set(x.key, true));
+      renderDecomp();
+      openInspector(state.node && parts[1] ? HM.nodes[state.node] : null);
+      if (changedMech && mech) requestAnimationFrame(() => $("#decomp").scrollIntoView({ behavior: "smooth", block: "start" }));
+      if (!mech) window.scrollTo(0, 0);
+    }
+    $$("#nav a").forEach((a) => a.classList.toggle("active", a.dataset.r === (state.page === "references" ? "references" : "home")));
+    document.title = (state.mech && state.page === "home" ? HM.mechs.find((m) => m.id === state.mech).title + " · " : state.page === "references" ? "References · " : "") + "Evacuation Motivation Framework";
   }
 
-  function bindView() {
-    const t = $("#toggle-all");
-    if (t) t.onclick = () => {
-      const ds = document.querySelectorAll(".pw-more");
-      const open = ![...ds].every((d) => d.open);
-      ds.forEach((d) => (d.open = open));
-      t.textContent = open ? "collapse all" : "expand all";
-    };
-    const f = $("#filter");
-    if (f) f.oninput = () => {
-      const q = f.value.trim().toLowerCase();
-      let n = 0;
-      document.querySelectorAll("#mtbl tbody tr").forEach((tr) => { const hit = !q || tr.dataset.text.includes(q); tr.hidden = !hit; n += hit; });
-      $("#mcount").textContent = `${n} metrics`;
-    };
-    document.querySelectorAll(".fig .mod").forEach((a) => {
-      const w = document.querySelector(`.fig .wire[data-i="${a.dataset.i}"]`);
-      a.onmouseenter = () => { w && w.classList.add("on"); document.querySelector(".fig").classList.add("hovering"); };
-      a.onmouseleave = () => { w && w.classList.remove("on"); document.querySelector(".fig").classList.remove("hovering"); };
+  function bindFigure() {
+    $$(".fig .mod").forEach((a) => {
+      const w = $(`.fig .wire[data-m="${a.dataset.m}"]`);
+      a.addEventListener("mouseenter", () => { w && w.classList.add("hov"); $("#fig1").classList.add("hovering"); });
+      a.addEventListener("mouseleave", () => { w && w.classList.remove("hov"); $("#fig1").classList.remove("hovering"); });
     });
   }
 
-  window.addEventListener("hashchange", route);
-  document.addEventListener("DOMContentLoaded", () => {
-    const b = document.getElementById("menu-btn");
-    if (b) b.onclick = () => document.body.classList.toggle("nav-open");
-  });
+  function bindGlobal() {
+    document.addEventListener("click", (e) => {
+      const tg = e.target.closest("[data-toggle]");
+      if (tg) {
+        e.preventDefault(); e.stopPropagation();
+        const n = HM.nodes[tg.dataset.toggle];
+        state.open.set(n.key, !isOpen(n));
+        renderDecomp();
+        return;
+      }
+      const r = e.target.closest("a[data-ref], a[data-src]");
+      if (r && !e.metaKey && !e.ctrlKey && !e.shiftKey) {
+        e.preventDefault();
+        openViewer(r.dataset.ref ? "ref" : "src", r.dataset.ref || r.dataset.src);
+        return;
+      }
+      if (e.target.closest("[data-close]")) closeViewer();
+      if (e.target.id === "viewer") closeViewer();
+    });
+    $("#viewer-close").onclick = closeViewer;
+    $("#ins-close").onclick = () => { if (state.mech) location.hash = `#/${state.mech}`; else openInspector(null); };
+    document.addEventListener("keydown", (e) => {
+      if (e.key !== "Escape") return;
+      if ($("#viewer").classList.contains("on")) closeViewer();
+      else if ($("#inspector").classList.contains("on")) $("#ins-close").click();
+    });
+    window.addEventListener("hashchange", route);
+  }
 })();

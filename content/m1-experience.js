@@ -1,27 +1,29 @@
 /*
- * Mechanism schema (all fields except id/code/title are optional):
+ * Mechanism schema. A mechanism is a tree: each node can hold children, hypotheses,
+ * a metric definition, evidence and context. Node ids are generated from position.
  *
  * HM.mechanism({
- *   id: "m1",                       // used in the URL: #/m/m1
- *   code: "M1",
- *   title: "...", short: "...",      // short = label in the navigation / figure
- *   status: "mixed",                 // "consistent" | "mixed" | "in-progress"
+ *   id: "m1", code: "M1",
+ *   title: "...", short: "...",        // short = label in the flow figure
+ *   status: "consistent" | "mixed" | "in-progress",
  *   question: "...",
- *   summary: ["paragraph with [@key] citations and **bold**", ...],
- *   notes: ["open issue", ...],      // shown as an "Open notes" box
- *   dimensions: [{
- *     name: "...",
- *     intro: { dir, chain, evidence },             // optional dimension-level hypothesis
- *     pathways: [{
- *       id: "1.1", title: "...",
- *       metrics: [{ name, measure, source: ["acs"], sign: "+" | "-" | "?" }],
- *       chains:  [{ dir: "pos" | "neg" | "ns", chain: "a(+) → b(+) → c(-)", evidence: "..." }],
- *       evidence: "...",              // evidence not tied to a single chain
- *       table: { columns: [...], rows: [[...], ...] },
- *       note: "..."
- *     }]
- *   }]
+ *   summary: ["text with [@key] citations and **bold**", ...],
+ *   notes: ["open issue", ...],
+ *   children: [ node, ... ]
  * });
+ *
+ * node = {
+ *   label: "Short label shown in the tree",
+ *   title: "Optional longer title shown in the inspector",
+ *   kind: "dimension" | "group" | "mediator" | "metric",
+ *   open: false,                                   // start collapsed (default: open)
+ *   hypotheses: [{ dir: "pos" | "neg" | "ns", chain: "a(+) → b(+) → evacuation motivation(-)", evidence: "..." }],
+ *   metric: { name, measure, source: ["acs"], sign: "+" | "-" | "?" },
+ *   evidence: "...",                               // evidence not tied to one hypothesis
+ *   table: { columns: [...], rows: [[...], ...] },
+ *   note: "...",
+ *   children: [ node, ... ]
+ * }
  */
 HM.mechanism({
   id: "m1",
@@ -35,66 +37,65 @@ HM.mechanism({
     "However, [@huang2016] summarized 21 studies in a meta-analysis and found that the correlation between hurricane experience and evacuation outcomes is not stable. To understand why, hurricane experience can be **decomposed into mediators** that may influence evacuation outcomes."
   ],
   notes: [
-    "Metrics and data sources for the M1 pathways are not yet specified.",
-    "Pathway 1.3: the chain includes “trust in government(−)”, while the cited evidence (Lazo 2015) indicates that having an evacuation plan increases the intention to evacuate. Check the chain direction."
+    "Metrics and data sources for the M1 mediators are not yet specified.",
+    "Family evacuation plan: the chain includes “trust in government(−)”, while Lazo (2015) indicates that having an evacuation plan increases the intention to evacuate. Check the chain direction."
   ],
-  dimensions: [
+  children: [
     {
-      name: "Mediators of hurricane experience",
-      pathways: [
+      label: "House preparation",
+      title: "Hurricane experience → house preparation → evacuation motivation",
+      kind: "mediator",
+      hypotheses: [
         {
-          id: "1.1",
-          title: "Hurricane experience → house preparation → evacuation motivation",
-          chains: [
-            {
-              dir: "neg",
-              chain: "hurricane experience(+) → house preparation(+) → evacuation motivation(-)",
-              evidence: "[@peacock2003] used survey data to show that **more hurricane experience** is associated with **more motivation to prepare the house** to mitigate damage, such as shutters and envelope coverage. [@hasan2012] studied three hurricanes using survey data and found that households with **window protection measures** (storm shutters, metal panels, or plywood sheets) are **less likely to evacuate** than households without protection measures."
-            },
-            {
-              dir: "ns",
-              chain: "hurricane experience(+) → house preparation(?) → evacuation motivation(?)",
-              evidence: "[@rincon2001] surveyed people who experienced Hurricane Andrew and found **no significant correlation between hurricane experience and house preparation**. They also found that fewer people evacuate to government shelters because of bad prior experiences, especially families with children under 13."
-            }
-          ]
+          dir: "neg",
+          chain: "hurricane experience(+) → house preparation(+) → evacuation motivation(-)",
+          evidence: "[@peacock2003] used survey data to show that **more hurricane experience** is associated with **more motivation to prepare the house** to mitigate damage, such as shutters and envelope coverage. [@hasan2012] studied three hurricanes using survey data and found that households with **window protection measures** (storm shutters, metal panels, or plywood sheets) are **less likely to evacuate** than households without protection measures."
         },
         {
-          id: "1.2",
-          title: "Hurricane experience → repeated false alarms (cry-wolf effect) → trust in government → evacuation motivation",
-          chains: [
-            {
-              dir: "neg",
-              chain: "hurricane experience(+) → repeated false alarms(+) → trust in government(-) → evacuation motivation(-)",
-              evidence: "[@rigos2019] found that previous **false alarms** may **decrease the authority’s credibility** and decrease evacuation motivation."
-            },
-            {
-              dir: "ns",
-              chain: "hurricane experience(+) → repeated false alarms(+) → trust in government(?) → evacuation motivation(?)",
-              evidence: "[@huang2016] and [@cryingwolf2015] found that previous **“unnecessary” evacuations (“false alarms”) have no effect on hurricane evacuation decisions**. One potential reason is that hurricanes do not threaten people frequently enough to decrease the authority’s credibility."
-            }
-          ]
+          dir: "ns",
+          chain: "hurricane experience(+) → house preparation(?) → evacuation motivation(?)",
+          evidence: "[@rincon2001] surveyed people who experienced Hurricane Andrew and found **no significant correlation between hurricane experience and house preparation**. They also found that fewer people evacuate to government shelters because of bad prior experiences, especially families with children under 13."
+        }
+      ]
+    },
+    {
+      label: "False alarms → trust",
+      title: "Hurricane experience → repeated false alarms (cry-wolf effect) → trust in government → evacuation motivation",
+      kind: "mediator",
+      hypotheses: [
+        {
+          dir: "neg",
+          chain: "hurricane experience(+) → repeated false alarms(+) → trust in government(-) → evacuation motivation(-)",
+          evidence: "[@rigos2019] found that previous **false alarms** may **decrease the authority’s credibility** and decrease evacuation motivation."
         },
         {
-          id: "1.3",
-          title: "Hurricane experience → family evacuation plan → evacuation motivation",
-          chains: [
-            {
-              dir: "neg",
-              chain: "hurricane experience(+) → family evacuation plan(+) → trust in government(-) → evacuation motivation(-)",
-              evidence: "[@halim2021] and [@horney2008] found that families with **past hurricane experience** prefer to make a **household evacuation plan** in advance, and [@lazo2015] reports that respondents who have previously developed an **evacuation plan are more likely to intend to evacuate**."
-            }
-          ]
-        },
+          dir: "ns",
+          chain: "hurricane experience(+) → repeated false alarms(+) → trust in government(?) → evacuation motivation(?)",
+          evidence: "[@huang2016] and [@cryingwolf2015] found that previous **“unnecessary” evacuations (“false alarms”) have no effect on hurricane evacuation decisions**. One potential reason is that hurricanes do not threaten people frequently enough to decrease the authority’s credibility."
+        }
+      ]
+    },
+    {
+      label: "Family evacuation plan",
+      title: "Hurricane experience → family evacuation plan → evacuation motivation",
+      kind: "mediator",
+      hypotheses: [
         {
-          id: "1.4",
-          title: "Hurricane experience → survival / optimistic bias → evacuation motivation",
-          chains: [
-            {
-              dir: "neg",
-              chain: "hurricane experience(+) → survival experience bias / optimistic bias(+) → evacuation motivation(-)",
-              evidence: "[@dillon2011] and [@eisenman2007] found that people who experienced a past hurricane with **less property damage tend to underestimate the likelihood of damage** in a future hurricane, even if their prior outcome was due to luck rather than any action they took. [@kates1962] referred to these people as “prisoners of experience”."
-            }
-          ]
+          dir: "neg",
+          chain: "hurricane experience(+) → family evacuation plan(+) → trust in government(-) → evacuation motivation(-)",
+          evidence: "[@halim2021] and [@horney2008] found that families with **past hurricane experience** prefer to make a **household evacuation plan** in advance, and [@lazo2015] reports that respondents who have previously developed an **evacuation plan are more likely to intend to evacuate**."
+        }
+      ]
+    },
+    {
+      label: "Optimistic bias",
+      title: "Hurricane experience → survival experience bias / optimistic bias → evacuation motivation",
+      kind: "mediator",
+      hypotheses: [
+        {
+          dir: "neg",
+          chain: "hurricane experience(+) → survival experience bias / optimistic bias(+) → evacuation motivation(-)",
+          evidence: "[@dillon2011] and [@eisenman2007] found that people who experienced a past hurricane with **less property damage tend to underestimate the likelihood of damage** in a future hurricane, even if their prior outcome was due to luck rather than any action they took. [@kates1962] referred to these people as “prisoners of experience”."
         }
       ]
     }

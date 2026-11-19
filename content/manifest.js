@@ -11,7 +11,7 @@ HM.boot({
     updated: "2026-11-19",
     intro: [
       "Evacuation outcomes are often modeled as a direct response to hazard and demographic variables. This framework instead places **evacuation motivation** at the center: each mechanism describes a source of motivation, the mediators through which it acts, the metrics that measure it, and the evidence for its direction.",
-      "Each pathway is written as a hypothesized causal chain. Colors follow the direction of the overall correlation with evacuation motivation."
+      "Select a mechanism in Fig 1 to unfold its structure, then select any node to inspect its hypotheses, metric construction, evidence and data sources."
     ]
   },
   files: [

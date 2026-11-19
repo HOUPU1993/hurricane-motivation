@@ -13,70 +13,89 @@ HM.mechanism({
     "Pham (2020b): the 15% reason is written as “preventing loss from roofers” in the notes; check whether “looters” is meant.",
     "Building type: single-family, multi-family and apartment households have uncertain expected signs."
   ],
-  dimensions: [
+  children: [
     {
-      name: "Financial ties to property",
-      intro: {
-        dir: "neg",
-        chain: "predicted personal house stake loss(+) → perceived loss if evacuate(+) → evacuation motivation(-)",
-        evidence: "[@pham2020b] surveyed 300 households: 23% of households who stayed in place explained that they wanted to prevent storm damage to their house, and 15% to prevent loss from roofers. The survey-based analysis of [@weller2016] also shows that the motivation to protect the house is an important reason for non-evacuation."
-      },
-      pathways: [
+      label: "Financial ties to property",
+      kind: "dimension",
+      hypotheses: [
         {
-          id: "2.1",
-          title: "Mortgage-free homeowners (paid off)",
-          metrics: [
-            { name: "Pct. of mortgage-free homeowners (paid off)", measure: "Share of homeowners whose mortgage has been paid off", sign: "-" }
-          ],
-          chains: [
-            { dir: "neg", chain: "mortgage-free homeowners, paid off(+) → tenure length / older residents(+) → evacuation motivation(-)" }
-          ]
-        },
+          dir: "neg",
+          chain: "predicted personal house stake loss(+) → perceived loss if evacuate(+) → evacuation motivation(-)",
+          evidence: "[@pham2020b] surveyed 300 households: 23% of households who stayed in place explained that they wanted to prevent storm damage to their house, and 15% to prevent loss from roofers. The survey-based analysis of [@weller2016] also shows that the motivation to protect the house is an important reason for non-evacuation."
+        }
+      ],
+      children: [
         {
-          id: "2.2",
-          title: "Mortgage-free homeowners (cash purchase)",
-          metrics: [
-            { name: "Pct. of mortgage-free homeowners (cash purchase)", measure: "Share of homeowners who bought the house in cash", sign: "+" }
-          ],
-          chains: [
-            { dir: "pos", chain: "mortgage-free homeowners, cash buyers(+) → very wealthy households(+) → multiple resources in the U.S.(+) → evacuation motivation(+)" }
-          ]
-        },
-        {
-          id: "2.3",
-          title: "Active mortgage, positive equity (remaining mortgage < house value)",
-          metrics: [
-            { name: "Loan-to-value ratio", measure: "remaining mortgage / house value", sign: "-" }
-          ],
-          chains: [
+          label: "Mortgage status",
+          kind: "group",
+          note: "Homeowners are split by mortgage status; each branch implies a different stake in the property.",
+          children: [
             {
-              dir: "neg",
-              chain: "predicted personal house stake loss(+) → perceived loss if evacuate(+) → evacuation motivation(-)",
-              evidence: "[@liao2026] found that higher **home equity** increases the motivation to purchase **flood insurance**. [@karaye2019] found that owners with **flood insurance may prefer to stay in place**; a potential reason is that flood insurance may decrease risk perception. [@botzen2019] shows a correlation between **insurance and long-term flood prevention**."
+              label: "Mortgage-free",
+              title: "Mortgage-free homeowners",
+              kind: "group",
+              children: [
+                {
+                  label: "Paid off",
+                  title: "Mortgage-free homeowners (mortgage paid off)",
+                  kind: "metric",
+                  metric: { name: "Pct. of mortgage-free homeowners (paid off)", measure: "Share of owner-occupied units whose mortgage has been paid off", sign: "-" },
+                  hypotheses: [
+                    { dir: "neg", chain: "mortgage-free homeowners, paid off(+) → tenure length / older residents(+) → evacuation motivation(-)" }
+                  ]
+                },
+                {
+                  label: "Cash purchase",
+                  title: "Mortgage-free homeowners (cash buyers)",
+                  kind: "metric",
+                  metric: { name: "Pct. of mortgage-free homeowners (cash purchase)", measure: "Share of owner-occupied units bought in cash", sign: "+" },
+                  hypotheses: [
+                    { dir: "pos", chain: "mortgage-free homeowners, cash buyers(+) → very wealthy households(+) → multiple resources in the U.S.(+) → evacuation motivation(+)" }
+                  ]
+                }
+              ]
+            },
+            {
+              label: "Active mortgage",
+              title: "Active-mortgage homeowners",
+              kind: "group",
+              children: [
+                {
+                  label: "Positive equity",
+                  title: "Active mortgage, remaining mortgage < house value",
+                  kind: "metric",
+                  metric: { name: "Loan-to-value ratio", measure: "remaining mortgage / house value  (where remaining mortgage < house value)", sign: "-" },
+                  hypotheses: [
+                    {
+                      dir: "neg",
+                      chain: "predicted personal house stake loss(+) → perceived loss if evacuate(+) → evacuation motivation(-)",
+                      evidence: "[@liao2026] found that higher **home equity** increases the motivation to purchase **flood insurance**. [@karaye2019] found that owners with **flood insurance may prefer to stay in place**; a potential reason is that flood insurance may decrease risk perception. [@botzen2019] shows a correlation between **insurance and long-term flood prevention**."
+                    }
+                  ]
+                },
+                {
+                  label: "Negative equity",
+                  title: "Active mortgage, remaining mortgage > house value",
+                  kind: "metric",
+                  metric: { name: "Pct. of negative-equity homeowners", measure: "Share of mortgaged owners whose remaining mortgage exceeds house value", sign: "-" },
+                  hypotheses: [
+                    {
+                      dir: "neg",
+                      chain: "negative-equity homeowners(+) → lower income(+) → evacuation motivation(-)",
+                      evidence: "[@liao2026] concludes that lower-equity owners with a mortgage have less motivation to protect their house because they can shift loss risk to the lender by defaulting on debt. [@kousky2020] studied Hurricane Harvey and found a significant correlation between house damage and mortgage credit risk."
+                    }
+                  ]
+                }
+              ]
             }
           ]
         },
         {
-          id: "2.4",
-          title: "Negative equity (remaining mortgage > house value)",
-          metrics: [
-            { name: "Pct. of negative-equity homeowners", measure: "Share of homeowners whose remaining mortgage exceeds house value", sign: "-" }
-          ],
-          chains: [
-            {
-              dir: "neg",
-              chain: "negative-equity homeowners(+) → lower income(+) → evacuation motivation(-)",
-              evidence: "[@liao2026] concludes that lower-equity owners with a mortgage have less motivation to protect their house because they can shift loss risk to the lender by defaulting on debt. [@kousky2020] studied Hurricane Harvey and found a significant correlation between house damage and mortgage credit risk."
-            }
-          ]
-        },
-        {
-          id: "2.5",
+          label: "Flood insurance",
           title: "Flood insurance coverage",
-          metrics: [
-            { name: "Flood insurance coverage rate", measure: "Pct. of households with flood insurance", source: ["floodins"], sign: "-" }
-          ],
-          chains: [
+          kind: "metric",
+          metric: { name: "Flood insurance coverage rate", measure: "Pct. of households with flood insurance", source: ["floodins"], sign: "-" },
+          hypotheses: [
             {
               dir: "neg",
               chain: "flood insurance coverage(+) → risk perception(-) → evacuation motivation(-)",
@@ -87,83 +106,81 @@ HM.mechanism({
       ]
     },
     {
-      name: "House characteristics",
-      pathways: [
+      label: "House characteristics",
+      kind: "dimension",
+      children: [
         {
-          id: "2.6",
-          title: "Building code era / house age",
-          metrics: [
-            { name: "pct_house_before1974", measure: "Share of housing units built before 1974", source: ["acs", "infutor"], sign: "+" },
-            { name: "pct_house_1974_1994", measure: "Built 1974–1994", source: ["acs", "infutor"] },
-            { name: "pct_house_1994_2002", measure: "Built 1994–2002", source: ["acs", "infutor"] },
-            { name: "pct_house_after_2002", measure: "Built after 2002", source: ["acs", "infutor"] }
-          ],
-          chains: [
+          label: "Building code / condition",
+          kind: "group",
+          open: false,
+          hypotheses: [
             {
               dir: "pos",
               chain: "house age(+) → more safety concern(-) → evacuation motivation(+)",
               evidence: "The [@fema_ian] found that newer, elevated homes experienced less flood damage than older homes; significant changes can be observed among homes built before 1974, within the 1990s, and after 2002. In Lee County, a house built in 1973 had about seven feet of flooding on its lowest floor, while a house built in 2006 was flooded mainly in the enclosed space below its lowest floor. An analysis of about 1,100 Florida homes affected by Hurricane Irma found significantly less damage to roof and wall coverings in homes built after 1994 [@nahb2019]."
             }
           ],
-          note: "ACS tables B25035 (median year built) or B25036 (tenure by year built).",
+          note: "Year built from ACS B25035 (median year built) or B25036 (tenure by year built), or Infutor property records. Year bins follow Florida building code eras.",
           table: {
-            columns: ["Year", "Policy", "Change", "Metric"],
+            columns: ["Year", "Policy", "Change"],
             rows: [
-              ["before 1974", "—", "No statewide minimum building code.", "pct_house_before1974"],
-              ["1974", "State Minimum Building Code Law", "Required local governments to adopt and enforce minimum building safety standards, while allowing local variations in building codes.", "pct_house_1974_1994"],
-              ["1994", "South Florida Building Code revision", "After Hurricane Andrew (1992): strengthened requirements for roofs, windows, building envelopes and other wind resistance in Miami-Dade and Broward Counties.", "pct_house_1994_2002"],
-              ["1994", "HUD Manufactured Home Wind Standards", "Strengthened construction requirements for newly manufactured homes, including structural connections and roof systems.", "pct_house_1994_2002"],
-              ["2002", "Florida Building Code (FBC)", "Established a unified statewide code with strengthened hurricane-resistant construction standards, replacing the fragmented local code system.", "pct_house_after_2002"]
+              ["1974", "State Minimum Building Code Law", "Required local governments to adopt and enforce minimum building safety standards, while allowing local variations in building codes."],
+              ["1994", "South Florida Building Code revision", "After Hurricane Andrew (1992): strengthened requirements for roofs, windows, building envelopes and other wind resistance in Miami-Dade and Broward Counties."],
+              ["1994", "HUD Manufactured Home Wind Standards", "Strengthened construction requirements for newly manufactured homes, including structural connections and roof systems."],
+              ["2002", "Florida Building Code (FBC)", "Established a unified statewide code with strengthened hurricane-resistant construction standards, replacing the fragmented local code system."]
             ]
-          }
-        },
-        {
-          id: "2.7",
-          title: "Building type",
-          metrics: [
-            { name: "Pct. of mobile home households", sign: "+" },
-            { name: "Pct. of single-family households", sign: "?" },
-            { name: "Pct. of multi-family households", sign: "?" },
-            { name: "Pct. of apartment households", sign: "?" }
-          ],
-          chains: [
-            {
-              dir: "pos",
-              chain: "mobile home household(+) → evacuation motivation(+)",
-              evidence: "[@karaye2019] and [@tanim2022] found that residents of mobile homes had a significantly higher evacuation tendency than residents of single-family homes."
-            }
+          },
+          children: [
+            { label: "Built before 1974", kind: "metric", metric: { name: "pct_house_before1974", measure: "Share of housing units built before 1974 (no statewide minimum code)", source: ["acs", "infutor"], sign: "+" } },
+            { label: "Built 1974–1994", kind: "metric", metric: { name: "pct_house_1974_1994", measure: "Share built 1974–1994 (State Minimum Building Code Law)", source: ["acs", "infutor"] } },
+            { label: "Built 1994–2002", kind: "metric", metric: { name: "pct_house_1994_2002", measure: "Share built 1994–2002 (South Florida code revision; HUD wind standards)", source: ["acs", "infutor"] } },
+            { label: "Built after 2002", kind: "metric", metric: { name: "pct_house_after_2002", measure: "Share built after 2002 (statewide Florida Building Code)", source: ["acs", "infutor"] } }
           ]
         },
         {
-          id: "2.8",
-          title: "Building location",
-          metrics: [
-            { name: "Official evacuation zone", sign: "+", source: ["fema_zone"] },
-            { name: "FEMA flood zone", sign: "+", source: ["fema_zone"] },
-            { name: "Low-lying area", sign: "+" }
-          ],
-          chains: [
+          label: "Building type",
+          kind: "group",
+          open: false,
+          evidence: "[@karaye2019] and [@tanim2022] found that residents of mobile homes had a significantly higher evacuation tendency than residents of single-family homes.",
+          children: [
+            { label: "Mobile home", kind: "metric", metric: { name: "Pct. of mobile home households", sign: "+" } },
+            { label: "Single-family", kind: "metric", metric: { name: "Pct. of single-family households", sign: "?" } },
+            { label: "Multi-family", kind: "metric", metric: { name: "Pct. of multi-family households", sign: "?" } },
+            { label: "Apartment", kind: "metric", metric: { name: "Pct. of apartment households", sign: "?" } }
+          ]
+        },
+        {
+          label: "Building location",
+          kind: "group",
+          open: false,
+          hypotheses: [
             {
               dir: "pos",
               chain: "high risk perception(+) → evacuation motivation(+)",
               evidence: "[@robert2010] highlights that people living in an evacuation zone are significantly more likely to evacuate."
             }
+          ],
+          children: [
+            { label: "Official evacuation zone", kind: "metric", metric: { name: "Official evacuation zone", source: ["fema_zone"], sign: "+" } },
+            { label: "FEMA flood zone", kind: "metric", metric: { name: "FEMA flood zone", source: ["fema_zone"], sign: "+" } },
+            { label: "Low-lying area", kind: "metric", metric: { name: "Low-lying area", sign: "+" } }
           ]
         },
         {
-          id: "2.9",
-          title: "Structural protection",
-          metrics: [
-            { name: "Window protection (wind)", sign: "-", source: ["nsi"] },
-            { name: "Roof protection (wind)", sign: "-", source: ["nsi"] },
-            { name: "Ground elevation and foundation type (flooding)", sign: "-", source: ["nsi"] }
-          ],
-          chains: [
+          label: "Structural protection",
+          kind: "group",
+          open: false,
+          hypotheses: [
             {
               dir: "neg",
               chain: "structural protection(+) → perceived home safety(+) → evacuation motivation(-)",
               evidence: "[@hasan2012] found that households with window protection measures (storm shutters, metal panels, or plywood sheets on windows) are less likely to evacuate than households without protection measures."
             }
+          ],
+          children: [
+            { label: "Window protection (wind)", kind: "metric", metric: { name: "Window protection (wind)", source: ["nsi"], sign: "-" } },
+            { label: "Roof protection (wind)", kind: "metric", metric: { name: "Roof protection (wind)", source: ["nsi"], sign: "-" } },
+            { label: "Ground elevation (flood)", kind: "metric", metric: { name: "Ground elevation and foundation type (flooding)", source: ["nsi"], sign: "-" } }
           ]
         }
       ]

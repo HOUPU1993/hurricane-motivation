@@ -9,17 +9,16 @@ HM.mechanism({
     "Existing studies suggest that attachment to home and community may influence hurricane evacuation decisions. Longer residential tenure can strengthen emotional attachment through personal memories and familiarity with the local environment [@dimasso2019], and has been associated with lower evacuation likelihood in some studies [@thompson2017].",
     "Regarding community attachment, [@horney2010a] found that stronger neighborhood cohesion was associated with lower evacuation, while [@collins2017] found that residents who stayed reported more dependable social support. Together, these findings suggest that **emotional ties to home and community may contribute to lower evacuation motivation**."
   ],
-  dimensions: [
+  children: [
     {
-      name: "Attachment to home / community",
-      pathways: [
+      label: "Attachment to home / community",
+      kind: "dimension",
+      children: [
         {
-          id: "3.1",
-          title: "Tenure length",
-          metrics: [
-            { name: "Tenure length", measure: "ACS B25038, B25039, B07001", source: ["acs"], sign: "-" }
-          ],
-          chains: [
+          label: "Tenure length",
+          kind: "metric",
+          metric: { name: "Tenure length", measure: "Years in current residence (ACS B25038, B25039, B07001)", source: ["acs"], sign: "-" },
+          hypotheses: [
             {
               dir: "neg",
               chain: "tenure length(+) → personal memory / familiar spatial environment / recognition of local culture and lifestyle → evacuation motivation(-)",
@@ -30,15 +29,14 @@ HM.mechanism({
       ]
     },
     {
-      name: "Attachment to community",
-      pathways: [
+      label: "Attachment to community",
+      kind: "dimension",
+      children: [
         {
-          id: "3.2",
-          title: "Neighborhood cohesion",
-          metrics: [
-            { name: "Neighborhood cohesion", measure: "Residence and monthly mobility location clusters — time-frequency co-present event strength", source: ["gps"], sign: "?" }
-          ],
-          chains: [
+          label: "Neighborhood cohesion",
+          kind: "metric",
+          metric: { name: "Neighborhood cohesion", measure: "Residence and monthly mobility location clusters — time-frequency co-present event strength", source: ["gps"], sign: "?" },
+          hypotheses: [
             {
               dir: "neg",
               chain: "neighborhood cohesion(+) → dependability of social support(+) → evacuation motivation(-)",

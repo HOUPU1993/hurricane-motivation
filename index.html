@@ -3,23 +3,41 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Motivation-centered Framework · Hurricane Evacuation</title>
+  <title>Evacuation Motivation Framework</title>
   <meta name="description" content="A motivation-centered framework for studying hurricane evacuation outcomes: mechanisms, metrics, hypotheses and evidence.">
   <link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
-  <aside class="side" id="side">
+  <header class="top">
     <a class="brand" href="#/">
       <span class="brand-mark" aria-hidden="true"></span>
-      <span class="brand-text">Evacuation<br><b>Motivation</b></span>
+      <span class="brand-text">Evacuation <b>Motivation</b></span>
     </a>
-    <nav id="nav" aria-label="Sections"></nav>
-    <div class="side-foot mono">Houpu Li · UCSB</div>
-  </aside>
-  <button class="menu-btn mono" id="menu-btn" aria-label="Toggle navigation">menu</button>
+    <nav id="nav" class="mono" aria-label="Pages">
+      <a href="#/" data-r="home">Overview</a>
+      <a href="#/references" data-r="references">References</a>
+    </nav>
+  </header>
+
   <main id="app" tabindex="-1"></main>
 
-  <!-- Content is loaded from content/manifest.js; edit content/*.js to update the site. -->
+  <!-- Inspector: details of the selected node -->
+  <aside id="inspector" class="inspector" aria-hidden="true" aria-label="Node details">
+    <div class="ins-bar mono"><span id="ins-crumb"></span><button class="x" id="ins-close" aria-label="Close">esc ×</button></div>
+    <div class="ins-body" id="ins-body"></div>
+  </aside>
+
+  <!-- Viewer: in-site window for references and data sources -->
+  <div id="viewer" class="viewer" aria-hidden="true" role="dialog" aria-modal="true">
+    <div class="viewer-box">
+      <div class="viewer-bar mono">
+        <span id="viewer-title"></span>
+        <span class="viewer-actions"><a id="viewer-open" target="_blank" rel="noopener">open in new tab ↗</a><button class="x" id="viewer-close" aria-label="Close">esc ×</button></span>
+      </div>
+      <div class="viewer-body" id="viewer-body"></div>
+    </div>
+  </div>
+
   <script src="assets/app.js"></script>
   <script src="content/manifest.js"></script>
 </body>

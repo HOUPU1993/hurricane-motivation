@@ -11,16 +11,12 @@ HM.mechanism({
   notes: [
     "Metrics, hypotheses and data sources are not yet specified."
   ],
-  dimensions: [
+  children: [
     {
-      name: "Evacuation constraints",
-      pathways: [
-        {
-          id: "6.1",
-          title: "Traffic congestion on evacuation routes",
-          evidence: "[@rincon2001] describes the 1999 hurricane season, when Hurricane Floyd threatened Florida’s entire Atlantic coast: the 2 million Floridians who tried to evacuate found themselves trapped in traffic, and many did not find an available shelter. Because of a shortfall of 1.5 million shelter spaces, 577,000 people would not have had access to a shelter."
-        }
-      ]
+      label: "Traffic congestion",
+      title: "Traffic congestion on evacuation routes",
+      kind: "mediator",
+      evidence: "[@rincon2001] describes the 1999 hurricane season, when Hurricane Floyd threatened Florida’s entire Atlantic coast: the 2 million Floridians who tried to evacuate found themselves trapped in traffic, and many did not find an available shelter. Because of a shortfall of 1.5 million shelter spaces, 577,000 people would not have had access to a shelter."
     }
   ]
 });

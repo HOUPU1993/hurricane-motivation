@@ -12,27 +12,24 @@ HM.mechanism({
   notes: [
     "Risk communication: no data yet for the way warnings are delivered, or for risk training."
   ],
-  dimensions: [
+  children: [
     {
-      name: "Actual risk exposure",
-      pathways: [
+      label: "Actual risk exposure",
+      kind: "dimension",
+      children: [
         {
-          id: "4.1",
-          title: "Distance to predicted storm",
-          metrics: [
-            { name: "Distance to predicted storm track", measure: "Distance from CBG to forecast track", source: ["nhc"], sign: "-" }
-          ],
-          chains: [
+          label: "Distance to predicted storm",
+          kind: "metric",
+          metric: { name: "Distance to predicted storm track", measure: "Distance from CBG to NHC forecast track", source: ["nhc"], sign: "-" },
+          hypotheses: [
             { dir: "neg", chain: "predicted distance to CBG(+) → perceived risk(-) → evacuation motivation(-)" }
           ]
         },
         {
-          id: "4.2",
-          title: "Historical flooding frequency",
-          metrics: [
-            { name: "Historical flooding annual frequency", source: ["nri"], sign: "?" }
-          ],
-          chains: [
+          label: "Historical flooding frequency",
+          kind: "metric",
+          metric: { name: "Historical flooding annual frequency", source: ["nri"], sign: "?" },
+          hypotheses: [
             { dir: "pos", chain: "flood exposure frequency(+) → perceived risk(+) → evacuation motivation(+)" },
             {
               dir: "ns",
@@ -42,22 +39,20 @@ HM.mechanism({
           ]
         },
         {
-          id: "4.3",
+          label: "Distance to actual storm",
           title: "Actual wind speed / distance to actual storm",
-          metrics: [
-            { name: "Distance to actual storm track / wind speed", measure: "Distance from CBG to best track", source: ["nhc"], sign: "-" }
-          ],
-          chains: [
+          kind: "metric",
+          metric: { name: "Distance to actual storm track / wind speed", measure: "Distance from CBG to NHC best track", source: ["nhc"], sign: "-" },
+          hypotheses: [
             { dir: "neg", chain: "actual distance to CBG(+) → actual risk(-) → evacuation motivation(-)" }
           ]
         },
         {
-          id: "4.4",
+          label: "Actual flooding",
           title: "Actual flooding caused by the hurricane",
-          metrics: [
-            { name: "Observed flooding", source: ["modis"], sign: "?" }
-          ],
-          chains: [
+          kind: "metric",
+          metric: { name: "Observed flooding", measure: "Flooded surface water during the event", source: ["modis"], sign: "?" },
+          hypotheses: [
             { dir: "pos", chain: "actual flooding(+) → actual risk(+) → evacuation motivation(+)" },
             {
               dir: "ns",
@@ -69,24 +64,23 @@ HM.mechanism({
       ]
     },
     {
-      name: "Risk communication",
-      pathways: [
+      label: "Risk communication",
+      kind: "dimension",
+      children: [
         {
-          id: "4.5",
-          title: "Official warning",
-          metrics: [
-            { name: "Warning type", measure: "Mandatory vs. voluntary order" },
-            { name: "Warning timing", measure: "Time of order relative to landfall" },
-            { name: "Warning delivery", measure: "No data" }
-          ],
-          evidence: "[@liu2025] found higher evacuation rates in the predicted landfall region during Hurricane Ian, potentially associated with earlier evacuation orders, while [@pham2020] identified evacuation-order timing as a significant predictor of departure timing during Hurricane Matthew."
+          label: "Official warning",
+          kind: "group",
+          evidence: "[@liu2025] found higher evacuation rates in the predicted landfall region during Hurricane Ian, potentially associated with earlier evacuation orders, while [@pham2020] identified evacuation-order timing as a significant predictor of departure timing during Hurricane Matthew.",
+          children: [
+            { label: "Type (mandatory)", kind: "metric", metric: { name: "Warning type", measure: "Mandatory vs. voluntary evacuation order" } },
+            { label: "Timing", kind: "metric", metric: { name: "Warning timing", measure: "Time of order relative to landfall" } },
+            { label: "Way of delivery", kind: "metric", metric: { name: "Warning delivery", measure: "No data" } }
+          ]
         },
         {
-          id: "4.6",
-          title: "Risk training",
-          metrics: [
-            { name: "Risk training", measure: "No data" }
-          ]
+          label: "Risk training",
+          kind: "metric",
+          metric: { name: "Risk training", measure: "No data" }
         }
       ]
     }

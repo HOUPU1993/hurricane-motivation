@@ -1,7 +1,8 @@
 /*
  * Bibliography and data sources.
  * Cite a reference anywhere in content text with [@key], e.g. "[@peacock2003] found ...".
- * Fields: label (in-text form), url, note (optional, shown in the reference list).
+ * Fields: label (in-text form), url, note (optional), embed (optional true/false: force the in-site viewer
+ * to load or skip the page; most publishers block embedding, so they open as a summary card).
  */
 HM.references({
   pham2020:     { label: "Pham et al. (2020a)", url: "https://journals.ametsoc.org/view/journals/wcas/12/2/wcas-d-19-0030.1.xml", note: "Hurricane Matthew; evacuation order timing and departure timing." },
@@ -13,7 +14,7 @@ HM.references({
   rigos2019:    { label: "Rigos (2019)", url: "https://www.sciencedirect.com/science/article/pii/S0378437119304649" },
   cryingwolf2015: { label: "“Crying wolf” (2015)", url: "https://books.google.com/books?id=IlquBAAAQBAJ&pg=PA209", note: "Crying wolf: Repeat responses to hurricane evacuation orders. Author to be added." },
   halim2021:    { label: "Halim (2021)", url: "https://journals.sagepub.com/doi/10.1177/03611981211014529" },
-  horney2008:   { label: "Horney (2008)", url: "https://d1wqtxts1xzle7.cloudfront.net/55673985/2008_-_Factors_associated_with_hurricane_preparedness_-_Results_of_a_pre-hurricane_asssessment-libre.pdf", note: "Factors associated with hurricane preparedness: results of a pre-hurricane assessment." },
+  horney2008:   { label: "Horney (2008)", url: "https://d1wqtxts1xzle7.cloudfront.net/55673985/2008_-_Factors_associated_with_hurricane_preparedness_-_Results_of_a_pre-hurricane_asssessment-libre.pdf", note: "Factors associated with hurricane preparedness: results of a pre-hurricane assessment. The original link was a signed, expiring download URL; replace with a stable DOI." },
   lazo2015:     { label: "Lazo (2015)", url: "https://onlinelibrary.wiley.com/doi/10.1111/risa.12407" },
   dillon2011:   { label: "Dillon et al. (2011)", url: "https://onlinelibrary.wiley.com/doi/full/10.1111/j.1539-6924.2010.01506.x" },
   eisenman2007: { label: "Eisenman (2007)", url: "https://ajph.aphapublications.org/doi/full/10.2105/AJPH.2005.084335" },
