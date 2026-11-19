@@ -230,11 +230,19 @@ a.chip:hover { border-color: var(--hi); color: var(--lit); }
 
 /* ---------- references page ---------- */
 .refs { list-style: none; padding: 0; margin: 0; }
-.refs li { padding: 12px 0; border-bottom: 1px solid var(--faint); }
-.ref-main { display: flex; gap: 12px; align-items: baseline; flex-wrap: wrap; }
-.dom { font-size: 11px; color: var(--lo); }
-.ref-note { font-size: 13px; margin-top: 2px; }
-.ref-cited { margin-top: 6px; }
+.refs li { padding: 14px 0; border-bottom: 1px solid var(--faint); }
+.apa { margin: 0; padding-left: 2.2em; text-indent: -2.2em; font-size: 14px; line-height: 1.65; color: var(--text); }
+.apa i { color: var(--strong); }
+.apa a { color: var(--muted); word-break: break-all; }
+.apa a:hover { color: var(--lit); }
+.flag { margin: 8px 0 0 2.2em; padding: 8px 12px; font-size: 12.5px; color: #f2c66d; border: 1px dashed #6b5a2e; border-radius: 8px; background: #17140c; }
+.cite.flagged { border-bottom-style: dashed; border-color: #b8913a; }
+.ref-note { margin: 4px 0 0 2.2em; font-size: 12.5px; color: var(--muted); }
+.ref-cited { margin: 8px 0 0 2.2em; display: flex; flex-wrap: wrap; align-items: center; gap: 4px; font-size: 11px; }
+.ref-cited .cite { font-size: 11.5px; margin-right: 4px; }
+.ref-cited .sep { color: var(--lo); margin: 0 6px 0 2px; text-transform: uppercase; font-size: 10px; }
+.vcard .apa { padding-left: 0; text-indent: 0; margin: 4px 0 14px; }
+.vcard .flag { margin-left: 0; }
 
 /* ---------- responsive ---------- */
 @media (min-width: 1400px) { body.ins-open main { padding-right: calc(var(--ins) - 120px); } }

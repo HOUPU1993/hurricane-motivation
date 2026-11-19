@@ -19,6 +19,7 @@ content/m1-*.js ...     # one file per mechanism (HM.mechanism)
 
 - Edit text in `content/*.js`. The schema is documented at the top of `content/m1-experience.js`.
 - Cite a work with `[@key]` (key defined in `content/references.js`); use `**bold**` for emphasis.
+- References are stored as structured APA 7 fields (authors, year, title, journal, volume, issue, pages, doi). The in-text label (e.g. "Stein et al. (2010)") and the reference list are generated automatically.
 - Each mechanism is a tree of nodes (`dimension` → `group` → `metric`). A node can hold `hypotheses`, `metric`, `evidence`, `table`, `note` and `children`; set `open: false` to start it collapsed.
 - Write chains as `a(+) → b(+) → evacuation motivation(-)` and set `dir` to `pos`, `neg` or `ns`.
 - Links open in an in-site viewer. Most publishers block embedding, so those show a summary card with an "open original" button; set `embed: true/false` on a reference to override.

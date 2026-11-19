@@ -15,7 +15,7 @@
  * node = {
  *   label: "Short label shown in the tree",
  *   title: "Optional longer title shown in the inspector",
- *   kind: "dimension" | "group" | "mediator" | "metric",
+ *   kind: "dimension" | "group" | "mediator" | "metric" | "factor",   // "mediator" is shown as "evidence-backed chain"
  *   open: false,                                   // start collapsed (default: open)
  *   hypotheses: [{ dir: "pos" | "neg" | "ns", chain: "a(+) → b(+) → evacuation motivation(-)", evidence: "..." }],
  *   metric: { name, measure, source: ["acs"], sign: "+" | "-" | "?" },
@@ -38,7 +38,7 @@ HM.mechanism({
   ],
   notes: [
     "Metrics and data sources for the M1 mediators are not yet specified.",
-    "Family evacuation plan: the chain includes “trust in government(−)”, while Lazo (2015) indicates that having an evacuation plan increases the intention to evacuate. Check the chain direction."
+    "Family evacuation plan: the chain includes “trust in government(−)”, while Lazo et al. (2015) indicate that having an evacuation plan increases the intention to evacuate. Check the chain direction."
   ],
   children: [
     {
@@ -71,7 +71,7 @@ HM.mechanism({
         {
           dir: "ns",
           chain: "hurricane experience(+) → repeated false alarms(+) → trust in government(?) → evacuation motivation(?)",
-          evidence: "[@huang2016] and [@cryingwolf2015] found that previous **“unnecessary” evacuations (“false alarms”) have no effect on hurricane evacuation decisions**. One potential reason is that hurricanes do not threaten people frequently enough to decrease the authority’s credibility."
+          evidence: "[@huang2016] and [@dowcutter1998] found that previous **“unnecessary” evacuations (“false alarms”) have no effect on hurricane evacuation decisions**. One potential reason is that hurricanes do not threaten people frequently enough to decrease the authority’s credibility."
         }
       ]
     },

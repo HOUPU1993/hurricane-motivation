@@ -6,11 +6,11 @@ HM.mechanism({
   status: "mixed",
   question: "Does property-related motivation really exist?",
   summary: [
-    "Existing studies have identified associations between residential property characteristics and hurricane evacuation behavior. Regarding housing conditions, [@solis2010] found that residents of mobile homes and flood-prone areas were more likely to evacuate, and [@karaye2019] reported a significantly higher evacuation tendency among mobile home residents. A meta-analysis by [@tanim2022] further identified mobile home occupancy as a strong positive predictor of evacuation. The underlying mechanism may relate to psychological safety and population vulnerability.",
-    "Regarding financial ties to property, [@solis2010] found that homeowners were less likely to evacuate than non-homeowners. Homeowners differ from others in two important ways: they usually have **more financial ties to their property**, and they tend to have **longer tenure, higher income, or older age**. [@karaye2019] found that flood insurance coverage was associated with lower evacuation tendency."
+    "Existing studies have identified associations between residential property characteristics and hurricane evacuation behavior. Regarding housing conditions, [@solis2009] found that residents of mobile homes and flood-prone areas were more likely to evacuate, and [@karaye2019] reported a significantly higher evacuation tendency among mobile home residents. A meta-analysis by [@tanim2022] further identified mobile home occupancy as a strong positive predictor of evacuation. The underlying mechanism may relate to psychological safety and population vulnerability.",
+    "Regarding financial ties to property, [@solis2009] found that homeowners were less likely to evacuate than non-homeowners. Homeowners differ from others in two important ways: they usually have **more financial ties to their property**, and they tend to have **longer tenure, higher income, or older age**. [@karaye2019] found that flood insurance coverage was associated with lower evacuation tendency."
   ],
   notes: [
-    "Pham (2020b): the 15% reason is written as “preventing loss from roofers” in the notes; check whether “looters” is meant.",
+    "The 300-household survey cited as “Pham (2020)” links to a 2013 report by Wilmot and Gudishala that does not contain this survey; the original source needs to be identified. The notes also say “loss from roofers”; check whether “looters” is meant.",
     "Building type: single-family, multi-family and apartment households have uncertain expected signs."
   ],
   children: [
@@ -117,7 +117,7 @@ HM.mechanism({
             {
               dir: "pos",
               chain: "house age(+) → more safety concern(-) → evacuation motivation(+)",
-              evidence: "The [@fema_ian] found that newer, elevated homes experienced less flood damage than older homes; significant changes can be observed among homes built before 1974, within the 1990s, and after 2002. In Lee County, a house built in 1973 had about seven feet of flooding on its lowest floor, while a house built in 2006 was flooded mainly in the enclosed space below its lowest floor. An analysis of about 1,100 Florida homes affected by Hurricane Irma found significantly less damage to roof and wall coverings in homes built after 1994 [@nahb2019]."
+              evidence: "[@fippinger2024], summarizing FEMA’s Mitigation Assessment Team observations after Hurricane Ian, reports that newer, elevated homes experienced less flood damage than older homes; significant changes can be observed among homes built before 1974, within the 1990s, and after 2002. In Lee County, a house built in 1973 had about seven feet of flooding on its lowest floor, while a house built in 2006 was flooded mainly in the enclosed space below its lowest floor. An analysis of about 1,100 Florida homes affected by Hurricane Irma found significantly less damage to roof and wall coverings in homes built after 1994 [@nahb2019]."
             }
           ],
           note: "Year built from ACS B25035 (median year built) or B25036 (tenure by year built), or Infutor property records. Year bins follow Florida building code eras.",
@@ -143,7 +143,7 @@ HM.mechanism({
           open: false,
           children: [
             { label: "Mobile home", kind: "metric", metric: { name: "Pct. of mobile home households", sign: "+" },
-              evidence: "[@solis2010] found that residents of mobile homes were more likely to evacuate. [@karaye2019] and [@tanim2022] found that residents of mobile homes had a significantly higher evacuation tendency than residents of single-family homes." },
+              evidence: "[@solis2009] found that residents of mobile homes were more likely to evacuate. [@karaye2019] and [@tanim2022] found that residents of mobile homes had a significantly higher evacuation tendency than residents of single-family homes." },
             { label: "Single-family", kind: "metric", metric: { name: "Pct. of single-family households", sign: "?" } },
             { label: "Multi-family", kind: "metric", metric: { name: "Pct. of multi-family households", sign: "?" } },
             { label: "Apartment", kind: "metric", metric: { name: "Pct. of apartment households", sign: "?" } }
@@ -161,9 +161,9 @@ HM.mechanism({
           ],
           children: [
             { label: "Official evacuation zone", kind: "metric", metric: { name: "Official evacuation zone", sign: "+" },
-              evidence: "[@robert2010] highlights that people living in an evacuation zone are significantly more likely to evacuate." },
+              evidence: "[@stein2010] highlights that people living in an evacuation zone are significantly more likely to evacuate." },
             { label: "FEMA flood zone", kind: "metric", metric: { name: "FEMA flood zone", sign: "+" },
-              evidence: "[@solis2010] found that residents of flood-prone areas were more likely to evacuate." },
+              evidence: "[@solis2009] found that residents of flood-prone areas were more likely to evacuate." },
             { label: "Low-lying area", kind: "metric", metric: { name: "Low-lying area", sign: "+" } }
           ]
         },
