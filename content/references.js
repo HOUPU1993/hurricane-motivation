@@ -59,6 +59,10 @@ HM.references({
     title: "Transferability of hurricane evacuation choice model: Joint model estimation combining multiple data sources",
     journal: "Journal of Transportation Engineering", volume: "138", issue: "5", pages: "548–556", doi: "10.1061/(ASCE)TE.1943-5436.0000365" },
 
+  hong2021: { type: "article", authors: ["Hong, B.", "Bonczak, B. J.", "Gupta, A.", "Kontokosta, C. E."], year: 2021,
+    title: "Measuring inequality in community resilience to natural disasters using large-scale mobility data",
+    journal: "Nature Communications", volume: "12", pages: "Article 1870", doi: "10.1038/s41467-021-22160-w" },
+
   horney2008: { type: "article", authors: ["Horney, J. A.", "Snider, C. J.", "Malone, S.", "Gammons, L.", "Ramsey, S."], year: 2008,
     title: "Factors associated with hurricane preparedness: Results of a pre-hurricane assessment",
     journal: "Journal of Disaster Research", volume: "3", issue: "2", pages: "143–149", doi: "10.20965/jdr.2008.p0143",
@@ -88,6 +92,10 @@ HM.references({
   kousky2020: { type: "article", authors: ["Kousky, C.", "Palim, M.", "Pan, Y."], year: 2020,
     title: "Flood damage and mortgage credit risk: A case study of Hurricane Harvey",
     journal: "Journal of Housing Research", volume: "29", issue: "sup1", pages: "S86–S120", doi: "10.1080/10527001.2020.1840131" },
+
+  lamadrid2025: { type: "article", authors: ["Lamadrid, A. J.", "Escaleras, M.", "Mitsova, D.", "Esnard, A.-M.", "Sapat, A."], year: 2025,
+    title: "Household evacuation decisions and relationship to infrastructure disruption using evidence from Hurricane Irma",
+    journal: "Environment Systems and Decisions", volume: "45", issue: "3", pages: "Article 32", doi: "10.1007/s10669-025-10019-0" },
 
   lazo2015: { type: "article", authors: ["Lazo, J. K.", "Bostrom, A.", "Morss, R. E.", "Demuth, J. L.", "Lazrus, H."], year: 2015,
     title: "Factors affecting hurricane evacuation intentions",
@@ -133,6 +141,10 @@ HM.references({
   sadri2017: { type: "article", authors: ["Sadri, A. M.", "Ukkusuri, S. V.", "Gladwin, H."], year: 2017,
     title: "Modeling joint evacuation decisions in social networks: The case of Hurricane Sandy",
     journal: "Journal of Choice Modelling", volume: "25", pages: "50–60", doi: "10.1016/j.jocm.2017.02.002" },
+
+  shen2024: { type: "article", authors: ["Shen, J.", "Murray-Tuite, P.", "Wernstedt, K.", "Guikema, S."], year: 2024,
+    title: "Estimating pre-impact and post-impact evacuation behaviors – An empirical study of Hurricane Ida in coastal Louisiana and Mississippi",
+    journal: "Journal of Transport Geography", volume: "118", pages: "Article 103925", doi: "10.1016/j.jtrangeo.2024.103925" },
 
   solis2009: { type: "conference", authors: ["Solís, D.", "Thomas, M. H.", "Letson, D."], year: 2009,
     title: "Determinants of household hurricane evacuation choice in Florida",
