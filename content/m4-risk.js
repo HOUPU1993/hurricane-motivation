@@ -9,10 +9,6 @@ HM.mechanism({
     "Existing studies suggest that perceived hurricane risk and official risk communication influence evacuation decisions. [@huang2016] identified risk-area residence, expected personal impacts, and official warnings as consistent predictors of evacuation. [@morss2016] found that storm surge impact information increased evacuation intentions, while [@pham2020] found that evacuation order timing influenced departure timing.",
     "However, **objective hazard exposure does not always correspond to perceived risk or evacuation behavior**, as illustrated by [@horney2010b]."
   ],
-  notes: [
-    "Risk communication: no data yet for the way warnings are delivered, or for risk training.",
-    "Actual flooding: the notes also list “flood exposure frequency(+) → actual risk(+) → evacuation motivation(?)” with Horney et al. (2010b), but that study does not test observed inundation, so it is shown only under historical flooding."
-  ],
   children: [
     {
       label: "Actual risk exposure",

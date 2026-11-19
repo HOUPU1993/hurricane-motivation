@@ -8,9 +8,6 @@ HM.mechanism({
   summary: [
     "Factors outside individual motivation, such as evacuation route capacity and shelter availability, may also constrain evacuation outcomes."
   ],
-  notes: [
-    "Metrics, hypotheses and data sources are not yet specified."
-  ],
   children: [
     {
       label: "Traffic congestion",

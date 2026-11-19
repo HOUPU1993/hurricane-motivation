@@ -172,7 +172,7 @@
       <footer class="foot mono">Updated ${esc(s.updated || "")} · ${esc(s.author || "")}</footer>`;
   }
 
-  // Fig 1: mechanisms wired into the motivation hub, then to outcomes.
+  // Overview figure: mechanisms wired into the motivation hub, then to outcomes.
   function figureFlow() {
     const n = HM.mechs.length;
     const rowH = 56, top = 24, W = 1060, H = top * 2 + n * rowH - 16;
@@ -207,14 +207,14 @@
       <text x="${ox + ow / 2}" y="${oy + 20}" text-anchor="middle">evacuation</text><text x="${ox + ow / 2}" y="${oy + 34}" text-anchor="middle">outcomes</text></g>`;
     const tot = HM.mechs.reduce((a, m) => { const s = stats(m); a.n += s.nodes; a.k += s.metrics; a.h += s.hyps; return a; }, { n: 0, k: 0, h: 0 });
     return `<figure class="fig" id="fig1">
-      <div class="fig-bar mono"><span>Fig 1</span><span>Motivation-centered framework</span></div>
+      <div class="fig-bar mono"><span>Overview</span><span>Motivation-centered framework</span></div>
       <div class="fig-scroll"><svg class="fig-svg" viewBox="0 0 ${W} ${H}" style="min-width:720px" role="img" aria-label="Mechanisms feeding evacuation motivation">${wires}${hub}${mods}</svg></div>
       <div class="fig-bar mono"><span class="hint">select a mechanism to unfold it</span><span>${n} mechanisms · ${tot.k} metrics · ${tot.h} hypotheses</span></div>
     </figure>
     <div class="cap-row">${legend()}<span class="cap">Dots in each module count its hypotheses by direction.</span></div>`;
   }
 
-  // Fig 2: decomposition tree of the selected mechanism.
+  // Mechanism figure: decomposition tree of the selected mechanism.
   const T = { NW: 190, RW: 156, GAP: 34, P: 52, H: 42 };
   const colX = (d) => (d === 0 ? 0 : T.RW + T.GAP + (d - 1) * (T.NW + T.GAP));
 
@@ -281,7 +281,7 @@
     if (state.rendered !== m.id) {
       box.innerHTML = `<section class="dec">
         <figure class="fig">
-          <div class="fig-bar mono"><span>Fig 2 · ${esc(m.code)}</span><span>${m.status ? `<span class="badge" data-status="${esc(m.status)}">${esc(STATUS[m.status] || m.status)}</span>` : ""}</span></div>
+          <div class="fig-bar mono"><span>Mechanism ${esc(String(m.code).replace(/^M/, ""))}</span><span>${m.status ? `<span class="badge" data-status="${esc(m.status)}">${esc(STATUS[m.status] || m.status)}</span>` : ""}</span></div>
           <header class="dec-head">
             <h2>${esc(m.title)}</h2>
             ${m.question ? `<p class="question">${esc(m.question)}</p>` : ""}
@@ -289,7 +289,6 @@
           <div class="tree-scroll" id="tree-wrap"></div>
           <div class="dec-foot">
             <details class="bg" open><summary class="mono">literature summary</summary><div class="summary">${(m.summary || []).map((p) => `<p>${rich(p)}</p>`).join("")}</div></details>
-            ${(m.notes || []).length ? `<aside class="notes"><div class="block-label mono">Open notes</div><ul>${m.notes.map((x) => `<li>${rich(x)}</li>`).join("")}</ul></aside>` : ""}
           </div>
           <div class="fig-bar mono"><span class="hint">select a node to inspect · › to unfold a branch</span>
             <span>${st.metrics} metrics · ${st.hyps} hypotheses · <i class="dot pos"></i>${st.pos} <i class="dot neg"></i>${st.neg} <i class="dot ns"></i>${st.ns}</span></div>

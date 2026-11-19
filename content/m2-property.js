@@ -9,10 +9,6 @@ HM.mechanism({
     "Existing studies have identified associations between residential property characteristics and hurricane evacuation behavior. Regarding housing conditions, [@solis2009] found that residents of mobile homes and flood-prone areas were more likely to evacuate, and [@karaye2019] reported a significantly higher evacuation tendency among mobile home residents. A meta-analysis by [@tanim2022] further identified mobile home occupancy as a strong positive predictor of evacuation. The underlying mechanism may relate to psychological safety and population vulnerability.",
     "Regarding financial ties to property, [@solis2009] found that homeowners were less likely to evacuate than non-homeowners. Homeowners differ from others in two important ways: they usually have **more financial ties to their property**, and they tend to have **longer tenure, higher income, or older age**. [@karaye2019] found that flood insurance coverage was associated with lower evacuation tendency."
   ],
-  notes: [
-    "The 300-household survey cited as “Pham (2020)” links to a 2013 report by Wilmot and Gudishala that does not contain this survey; the original source needs to be identified. The notes also say “loss from roofers”; check whether “looters” is meant.",
-    "Building type: single-family, multi-family and apartment households have uncertain expected directions."
-  ],
   children: [
     {
       label: "Financial ties to property",

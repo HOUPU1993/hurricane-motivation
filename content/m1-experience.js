@@ -8,7 +8,6 @@
  *   status: "consistent" | "mixed" | "in-progress",
  *   question: "...",
  *   summary: ["text with [@key] citations and **bold**", ...],
- *   notes: ["open issue", ...],
  *   children: [ node, ... ]
  * });
  *
@@ -35,10 +34,6 @@ HM.mechanism({
   summary: [
     "Overall, more hurricane experience is associated with lower evacuation outcomes. [@pham2020] studied Hurricane Matthew and found that the evacuation rate of households with hurricane experience was half that of households without it.",
     "However, [@huang2016] summarized 21 studies in a meta-analysis and found that the correlation between hurricane experience and evacuation outcomes is not stable. To understand why, hurricane experience can be **decomposed into mediators** that may influence evacuation outcomes."
-  ],
-  notes: [
-    "Metrics and data sources for the M1 mediators are not yet specified.",
-    "Family evacuation plan: the chain includes “trust in government(−)”, while Lazo et al. (2015) indicate that having an evacuation plan increases the intention to evacuate. Check the chain direction."
   ],
   children: [
     {
