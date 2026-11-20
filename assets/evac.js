@@ -27,7 +27,8 @@
   const $$ = (s, r = document) => [...r.querySelectorAll(s)];
   const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
-  const st = { data: null, map: null, hk: null, oid: null, base: "dark", colorBy: "conf", props: {}, showArea: true, showCbg: true, noSliver: true, inCounty: true, ready: false, popup: null };
+  const st = { data: null, map: null, hk: null, oid: null, base: "dark", colorBy: "conf", props: {},
+    areaOp: 1, cbgOp: 1, areaLine: true, cbgLine: true, showArea: true, showCbg: true, noSliver: true, inCounty: true, ready: false, popup: null };
 
   // ---------- loading ----------
   function loadScript(src) {
@@ -74,7 +75,15 @@
         <div class="ev-sec ev-layers">
           <div class="block-label mono">Layers</div>
           <label><input type="checkbox" id="ev-area" checked><span class="sw area"></span>Evacuation area</label>
+          <div class="sub lyr">
+            <span class="mono">opacity</span><input type="range" id="ev-area-op" min="0" max="100" value="100"><span class="mono val" id="ev-area-op-v">100%</span>
+            <label><input type="checkbox" id="ev-area-line" checked>outline</label>
+          </div>
           <label><input type="checkbox" id="ev-cbg" checked><span class="sw cbg"></span>Evacuation CBG</label>
+          <div class="sub lyr">
+            <span class="mono">opacity</span><input type="range" id="ev-cbg-op" min="0" max="100" value="100"><span class="mono val" id="ev-cbg-op-v">100%</span>
+            <label><input type="checkbox" id="ev-cbg-line" checked>outline</label>
+          </div>
           <div class="sub">
             <label><input type="checkbox" id="ev-sliver" checked>hide slivers (&lt; 1% of block group)</label>
             <label><input type="checkbox" id="ev-county" checked>order county only</label>
@@ -199,8 +208,19 @@
     ["cbg-fill", "cbg-line"].forEach((l) => { m.setFilter(l, cf); m.setLayoutProperty(l, "visibility", st.showCbg ? "visible" : "none"); });
     ["area-fill", "area-line", "area-hl"].forEach((l) => m.setLayoutProperty(l, "visibility", st.showArea ? "visible" : "none"));
     m.setFilter("area-fill", hkf); m.setFilter("area-line", hkf);
-    m.setPaintProperty("area-fill", "fill-opacity", st.showCbg ? 0.08 : 0.3);
+    applyLook();
     m.setFilter("area-hl", ["==", ["get", "oid"], st.oid || ""]);
+  }
+
+  // per-layer opacity and outline visibility
+  function applyLook() {
+    const m = st.map; if (!m || !st.ready) return;
+    m.setPaintProperty("area-fill", "fill-opacity", (st.showCbg ? 0.08 : 0.3) * st.areaOp);
+    m.setPaintProperty("area-line", "line-opacity", st.areaOp);
+    m.setPaintProperty("cbg-fill", "fill-opacity", ["interpolate", ["linear"], ["coalesce", ["get", "pct"], 0], 0, 0.12 * st.cbgOp, 50, 0.35 * st.cbgOp, 100, 0.55 * st.cbgOp]);
+    m.setPaintProperty("cbg-line", "line-opacity", 0.7 * st.cbgOp);
+    m.setLayoutProperty("area-line", "visibility", st.showArea && st.areaLine ? "visible" : "none");
+    m.setLayoutProperty("cbg-line", "visibility", st.showCbg && st.cbgLine ? "visible" : "none");
   }
 
   function setBase(b) {
@@ -328,6 +348,11 @@
     $("#ev-area").onchange = (e) => { st.showArea = e.target.checked; applyFilters(); };
     $("#ev-cbg").onchange = (e) => { st.showCbg = e.target.checked; applyFilters(); };
     $("#ev-sliver").onchange = (e) => { st.noSliver = e.target.checked; applyFilters(); };
+    [["area", "areaOp"], ["cbg", "cbgOp"]].forEach(([k, key]) => {
+      $(`#ev-${k}-op`).oninput = (e) => { st[key] = e.target.value / 100; $(`#ev-${k}-op-v`).textContent = `${e.target.value}%`; applyLook(); };
+    });
+    $("#ev-area-line").onchange = (e) => { st.areaLine = e.target.checked; applyLook(); };
+    $("#ev-cbg-line").onchange = (e) => { st.cbgLine = e.target.checked; applyLook(); };
     $("#ev-county").onchange = (e) => { st.inCounty = e.target.checked; applyFilters(); };
   }
 
