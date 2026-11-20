@@ -64,6 +64,14 @@ for hk in keys:
         cbg_out.write(json.dumps({"type": "Feature", "geometry": b["geom"],
             "properties": {"GEOID": g, "hk": hk, "pct": round(b["pct"], 2), "n": len(set(b["oids"])),
                            "oids": ",".join(sorted(set(b["oids"]))), "inc": b["incounty"]}}) + "\n")
+    # full GeoJSON attributes for the identify panel, one file per hurricane
+    BG_FIELDS = ["order_id", "GEOID", "bg_source", "bg_county_fips", "bg_in_order_county", "bg_area_km2", "overlap_km2", "pct_bg_in_area", "pct_area_in_bg", "overlap_class"]
+    props = {"areas": {f["properties"]["order_id"]: f["properties"] for f in area["features"]}, "cbg": {}}
+    for f in cbg["features"]:
+        p = f["properties"]
+        props["cbg"].setdefault(p["GEOID"], []).append({k: p.get(k) for k in BG_FIELDS})
+    os.makedirs(os.path.join(OUT, "props"), exist_ok=True)
+    json.dump(props, open(os.path.join(OUT, "props", f"{hk}.json"), "w"), separators=(",", ":"))
     hurricanes.append({"key": hk, "year": int(year), "name": name, "bbox": hb, "n_bg": len(bgs),
                        "states": sorted({o["state"] for o in orders}), "orders": sorted(orders, key=lambda o: (o["announce"], o["id"]))})
     print(hk, len(orders), "orders", len(bgs), "BGs")
