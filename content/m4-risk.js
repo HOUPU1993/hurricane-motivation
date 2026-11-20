@@ -91,20 +91,28 @@ HM.mechanism({
             },
             {
               label: "House damage",
-              kind: "metric",
-              metric: { name: "House damage", measure: "Residential damage caused by the hurricane", sign: "+" },
+              kind: "group",
+              note: "Measured from FEMA Individuals and Households Program (IHP) valid registrations, located by damaged-dwelling county, city and ZIP code.",
               hypotheses: [
                 {
                   dir: "pos",
                   chain: "house damage(+) → home habitability(-) → evacuation motivation(+)",
                   evidence: "[@shen2024] found that **residential damage** was a significant factor for **post-impact evacuation** during Hurricane Ida."
                 }
+              ],
+              children: [
+                { label: "Home damage", kind: "metric", metric: { name: "homeDamage", measure: "Did the applicant report home damage? (applicant-reported)", source: ["fema_ihp"], sign: "+" } },
+                { label: "Foundation damage", kind: "metric", metric: { name: "foundationDamage", measure: "FEMA-verified foundation damage", source: ["fema_ihp"], sign: "+" } },
+                { label: "Flood damage", kind: "metric", metric: { name: "floodDamage", measure: "Was flood damage recorded?", source: ["fema_ihp"], sign: "+" } },
+                { label: "Roof damage", kind: "metric", metric: { name: "roofDamage", measure: "Has the damaged dwelling’s roof been damaged?", source: ["fema_ihp"], sign: "+" } },
+                { label: "Destroyed", kind: "metric", metric: { name: "destroyed", measure: "Was the home destroyed by the disaster?", source: ["fema_ihp"], sign: "+" } }
               ]
             },
             {
               label: "Power outage",
               kind: "metric",
-              metric: { name: "Power outage", measure: "Duration of power outage at home", sign: "+" },
+              metric: { name: "Light Loss Ratio", measure: "LLR<sub>i,t</sub> = 1 − NTL<sub>i,t</sub> / NTL<sub>i,baseline</sub> &nbsp;— nighttime light (NTL) of area <i>i</i> on day <i>t</i> after the hurricane, relative to its pre-hurricane baseline; a higher ratio means a larger power outage", source: ["blackmarble"], sign: "+" },
+              note: "Nighttime lights come from the NASA Black Marble daily product VNP46A2, described by [@roman2018].",
               hypotheses: [
                 {
                   dir: "pos",

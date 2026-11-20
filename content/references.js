@@ -138,6 +138,10 @@ HM.references({
     title: "Effect of previous experience of a hurricane on preparedness for future hurricanes",
     journal: "The American Journal of Emergency Medicine", volume: "19", issue: "4", pages: "276–279", doi: "10.1053/ajem.2001.22668" },
 
+  roman2018: { type: "article", authors: ["Román, M. O.", "Wang, Z.", "Sun, Q.", "Kalb, V.", "Miller, S. D.", "Molthan, A.", "Schultz, L.", "Bell, J.", "Stokes, E. C.", "Pandey, B.", "Seto, K. C.", "Hall, D.", "Oda, T.", "Wolfe, R. E.", "Lin, G.", "Golpayegani, N.", "Devadiga, S.", "Davidson, C.", "Sarkar, S.", "Praderas, C.", "Schmaltz, J.", "Boller, R.", "Stevens, J.", "Ramos González, O. M.", "Padilla, E.", "Alonso, J.", "Detrés, Y.", "Armstrong, R.", "Miranda, I.", "Conte, Y.", "Marrero, N.", "MacManus, K.", "Esch, T.", "Masuoka, E. J."], year: 2018,
+    title: "NASA’s Black Marble nighttime lights product suite",
+    journal: "Remote Sensing of Environment", volume: "210", pages: "113–143", doi: "10.1016/j.rse.2018.03.017" },
+
   sadri2017: { type: "article", authors: ["Sadri, A. M.", "Ukkusuri, S. V.", "Gladwin, H."], year: 2017,
     title: "Modeling joint evacuation decisions in social networks: The case of Hurricane Sandy",
     journal: "Journal of Choice Modelling", volume: "25", pages: "50–60", doi: "10.1016/j.jocm.2017.02.002" },
@@ -194,6 +198,12 @@ HM.sources({
               apa: "Federal Emergency Management Agency. (n.d.). <i>National Risk Index: Census tracts</i> [Data set]." },
   modis:    { label: "NASA LANCE MODIS", url: "https://lance.modaps.eosdis.nasa.gov/flood/viewer/",
               apa: "NASA Land, Atmosphere Near real-time Capability for EOS. (n.d.). <i>MODIS near real-time global flood product</i> [Data set]." },
+  blackmarble: { label: "NASA Black Marble VNP46A2", url: "https://ladsweb.modaps.eosdis.nasa.gov/missions-and-measurements/products/VNP46A2",
+              apa: "NASA Level-1 and Atmosphere Archive & Distribution System Distributed Active Archive Center. (n.d.). <i>VIIRS/NPP gap-filled lunar BRDF-adjusted nighttime lights daily L3 global 500m linear lat lon grid (VNP46A2)</i> [Data set].",
+              note: "Daily, 15 arc-second (~500 m). Product described in Román et al. (2018)." },
+  fema_ihp: { label: "FEMA IHP registrations", url: "https://catalog.data.gov/dataset/individuals-and-households-program-valid-registrations",
+              apa: "Federal Emergency Management Agency. (n.d.). <i>OpenFEMA dataset: Individuals and Households Program – Valid registrations</i> [Data set]. U.S. Department of Homeland Security.",
+              note: "Applicant-level data; location by county, city and ZIP code. Version 1 (FEMA-0395) is deprecated in favor of version 2: https://www.fema.gov/openfema-data-page/individuals-and-households-program-valid-registrations-v2" },
   floodins: { label: "Flood insurance rates", url: "https://www.insuranceforgood.org/flood-insurance",
               apa: "<i>Flood insurance</i> [Web page]. (n.d.). insuranceforgood.org." }
 });
