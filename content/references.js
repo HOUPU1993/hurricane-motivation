@@ -18,6 +18,14 @@
  * Every entry below was checked against Crossref or the publisher record on 2026-11-19.
  */
 HM.references({
+  anand2024: { type: "article", authors: ["Anand, H.", "Alemazkoor, N.", "Shafiee-Jood, M."], year: 2024,
+    title: "HEvOD: A database of hurricane evacuation orders in the United States",
+    journal: "Scientific Data", volume: "11", pages: "Article 270", doi: "10.1038/s41597-024-03100-x" },
+
+  bailey2018: { type: "article", authors: ["Bailey, M.", "Cao, R.", "Kuchler, T.", "Stroebel, J.", "Wong, A."], year: 2018,
+    title: "Social connectedness: Measurement, determinants, and effects",
+    journal: "Journal of Economic Perspectives", volume: "32", issue: "3", pages: "259–280", doi: "10.1257/jep.32.3.259" },
+
   botzen2019: { type: "article", authors: ["Botzen, W. J. W.", "Kunreuther, H.", "Michel-Kerjan, E."], year: 2019,
     title: "Protecting against disaster risks: Why insurance and prevention may be complements",
     journal: "Journal of Risk and Uncertainty", volume: "59", issue: "2", pages: "151–169", doi: "10.1007/s11166-019-09312-6" },
@@ -204,6 +212,17 @@ HM.sources({
   fema_ihp: { label: "FEMA IHP registrations", url: "https://catalog.data.gov/dataset/individuals-and-households-program-valid-registrations",
               apa: "Federal Emergency Management Agency. (n.d.). <i>OpenFEMA dataset: Individuals and Households Program – Valid registrations</i> [Data set]. U.S. Department of Homeland Security.",
               note: "Applicant-level data; location by county, city and ZIP code. Version 1 (FEMA-0395) is deprecated in favor of version 2: https://www.fema.gov/openfema-data-page/individuals-and-households-program-valid-registrations-v2" },
+  hevod:    { label: "HEvOD", url: "https://www.hurrevacorder.info/",
+              apa: "Anand, H., Alemazkoor, N., & Shafiee-Jood, M. (2023). <i>HEvOD: Hurricane Evacuation Order Database</i> (Version 4) [Data set]. University of Virginia Dataverse. https://doi.org/10.18130/V3/ZGS4T4",
+              note: "Evacuation orders (type and timing) issued in the United States, 2014–2022. Described in Anand et al. (2024), Scientific Data." },
+  state_zones: { label: "State evacuation zones", apa: "Hurricane evacuation zones collected from state emergency management agencies [Data set]. Sources to be listed by state." },
+  fema_nfhl: { label: "FEMA NFHL", url: "https://www.fema.gov/flood-maps/national-flood-hazard-layer",
+              apa: "Federal Emergency Management Agency. (n.d.). <i>National Flood Hazard Layer (NFHL)</i> [Data set]." },
+  lodes:    { label: "LEHD LODES", url: "https://lehd.ces.census.gov/data/#lodes",
+              apa: "U.S. Census Bureau. (n.d.). <i>LEHD Origin-Destination Employment Statistics (LODES)</i> [Data set]." },
+  meta_sci: { label: "Meta SCI", url: "https://data.humdata.org/dataset/social-connectedness-index",
+              apa: "Meta. (n.d.). <i>Social Connectedness Index</i> [Data set]. Humanitarian Data Exchange.",
+              note: "Measure introduced in Bailey et al. (2018)." },
   floodins: { label: "Flood insurance rates", url: "https://www.insuranceforgood.org/flood-insurance",
               apa: "<i>Flood insurance</i> [Web page]. (n.d.). insuranceforgood.org." }
 });

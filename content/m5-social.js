@@ -13,7 +13,7 @@ HM.mechanism({
     {
       label: "Peer evacuation influence",
       kind: "metric",
-      metric: { name: "Peer evacuation exposure", measure: "P<sub>i</sub> = Σ<sub>j</sub>(w<sub>ij</sub> · E<sub>j</sub>) / Σ<sub>j</sub> w<sub>ij</sub>", sign: "+" },
+      metric: { name: "Peer evacuation exposure", measure: "P<sub>i</sub> = Σ<sub>j</sub>(w<sub>ij</sub> · E<sub>j</sub>) / Σ<sub>j</sub> w<sub>ij</sub>", source: ["gps"], sign: "+" },
       hypotheses: [
         {
           dir: "pos",
@@ -25,8 +25,12 @@ HM.mechanism({
     {
       label: "Interregional connections",
       title: "Interregional social connections from a higher-risk area to a lower-risk area",
-      kind: "metric",
-      metric: { name: "Interregional connectivity", measure: "OD flow from higher-risk area to lower-risk area", sign: "+" },
+      kind: "group",
+      note: "Connectivity from higher-risk to lower-risk areas, measured with two candidate data sources.",
+      children: [
+        { label: "Commuting ties (LODES)", kind: "metric", metric: { name: "Interregional commuting flow", measure: "Home–work OD flow from higher-risk areas to lower-risk areas", source: ["lodes"], sign: "+" } },
+        { label: "Friendship ties (Meta SCI)", kind: "metric", metric: { name: "Interregional social connectedness", measure: "Social Connectedness Index between higher-risk and lower-risk areas, based on Facebook friendship links [@bailey2018]", source: ["meta_sci"], sign: "+" } }
+      ],
       hypotheses: [
         {
           dir: "pos",

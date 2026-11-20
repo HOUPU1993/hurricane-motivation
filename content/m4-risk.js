@@ -133,8 +133,8 @@ HM.mechanism({
           label: "Official warning",
           kind: "group",
           children: [
-            { label: "Type (mandatory)", kind: "metric", metric: { name: "Warning type", measure: "Mandatory vs. voluntary evacuation order" } },
-            { label: "Timing", kind: "metric", metric: { name: "Warning timing", measure: "Timing of the evacuation order" },
+            { label: "Type (mandatory)", kind: "metric", metric: { name: "Warning type", measure: "Mandatory vs. voluntary evacuation order", source: ["hevod"] } },
+            { label: "Timing", kind: "metric", metric: { name: "Warning timing", measure: "Timing of the evacuation order", source: ["hevod"] },
               evidence: "[@liu2025] found higher evacuation rates in the predicted landfall region during Hurricane Ian, potentially associated with earlier evacuation orders, while [@pham2020] identified evacuation-order timing as a significant predictor of departure timing during Hurricane Matthew." },
             { label: "Warning delivery", kind: "metric", metric: { name: "Warning delivery", measure: "No data" } }
           ]

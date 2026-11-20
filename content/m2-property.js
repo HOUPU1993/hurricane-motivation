@@ -35,7 +35,7 @@ HM.mechanism({
                   label: "Paid off",
                   title: "Mortgage-free homeowners (mortgage paid off)",
                   kind: "metric",
-                  metric: { name: "Pct. of mortgage-free homeowners (paid off)", measure: "Share of owner-occupied units whose mortgage has been paid off", sign: "-" },
+                  metric: { name: "Pct. of mortgage-free homeowners (paid off)", measure: "Share of owner-occupied units whose mortgage has been paid off", source: ["infutor"], sign: "-" },
                   hypotheses: [
                     { dir: "neg", chain: "mortgage-free homeowners, paid off(+) → tenure length / older residents(+) → evacuation motivation(-)" }
                   ]
@@ -44,7 +44,7 @@ HM.mechanism({
                   label: "Cash purchase",
                   title: "Mortgage-free homeowners (cash buyers)",
                   kind: "metric",
-                  metric: { name: "Pct. of mortgage-free homeowners (cash purchase)", measure: "Share of owner-occupied units bought in cash", sign: "+" },
+                  metric: { name: "Pct. of mortgage-free homeowners (cash purchase)", measure: "Share of owner-occupied units bought in cash", source: ["infutor"], sign: "+" },
                   hypotheses: [
                     { dir: "pos", chain: "mortgage-free homeowners, cash buyers(+) → very wealthy households(+) → multiple resources in the U.S.(+) → evacuation motivation(+)" }
                   ]
@@ -60,7 +60,7 @@ HM.mechanism({
                   label: "Positive equity",
                   title: "Active mortgage, remaining mortgage < house value",
                   kind: "metric",
-                  metric: { name: "Loan-to-value ratio", measure: "remaining mortgage / house value  (where remaining mortgage < house value)", sign: "-" },
+                  metric: { name: "Remaining mortgage-to-value ratio", measure: "remaining mortgage / house value (where remaining mortgage < house value)", source: ["infutor"], sign: "-" },
                   hypotheses: [
                     {
                       dir: "neg",
@@ -73,7 +73,7 @@ HM.mechanism({
                   label: "Negative equity",
                   title: "Active mortgage, remaining mortgage > house value",
                   kind: "metric",
-                  metric: { name: "Pct. of negative-equity homeowners", measure: "Share of mortgaged owners whose remaining mortgage exceeds house value", sign: "-" },
+                  metric: { name: "Pct. of negative-equity homeowners", measure: "Share of mortgaged owners whose remaining mortgage exceeds house value", source: ["infutor"], sign: "-" },
                   hypotheses: [
                     {
                       dir: "neg",
@@ -138,11 +138,11 @@ HM.mechanism({
           kind: "group",
           open: false,
           children: [
-            { label: "Mobile home", kind: "metric", metric: { name: "Pct. of mobile home households", sign: "+" },
+            { label: "Mobile home", kind: "metric", metric: { name: "Pct. of mobile home households", measure: "CBG-level share of households living in mobile homes", sign: "+" },
               evidence: "[@solis2009] found that residents of mobile homes were more likely to evacuate. [@karaye2019] and [@tanim2022] found that residents of mobile homes had a significantly higher evacuation tendency than residents of single-family homes." },
-            { label: "Single-family", kind: "metric", metric: { name: "Pct. of single-family households", sign: "?" } },
-            { label: "Multi-family", kind: "metric", metric: { name: "Pct. of multi-family households", sign: "?" } },
-            { label: "Apartment", kind: "metric", metric: { name: "Pct. of apartment households", sign: "?" } }
+            { label: "Single-family", kind: "metric", metric: { name: "Pct. of single-family households", measure: "CBG-level share of households living in single-family homes", sign: "?" } },
+            { label: "Multi-family", kind: "metric", metric: { name: "Pct. of multi-family households", measure: "CBG-level share of households living in multi-family homes", sign: "?" } },
+            { label: "Apartment", kind: "metric", metric: { name: "Pct. of apartment households", measure: "CBG-level share of households living in apartments", sign: "?" } }
           ]
         },
         {
@@ -156,9 +156,9 @@ HM.mechanism({
             }
           ],
           children: [
-            { label: "Official evacuation zone", kind: "metric", metric: { name: "Official evacuation zone", sign: "+" },
+            { label: "Official evacuation zone", kind: "metric", metric: { name: "Official evacuation zone", measure: "Whether the area lies in an official hurricane evacuation zone", source: ["hevod", "state_zones"], sign: "+" },
               evidence: "[@stein2010] highlights that people living in an evacuation zone are significantly more likely to evacuate." },
-            { label: "FEMA flood zone", kind: "metric", metric: { name: "FEMA flood zone", sign: "+" },
+            { label: "FEMA flood zone", kind: "metric", metric: { name: "FEMA flood zone", measure: "Whether the area lies in a FEMA special flood hazard area", source: ["fema_nfhl"], sign: "+" },
               evidence: "[@solis2009] found that residents of flood-prone areas were more likely to evacuate." },
             { label: "Low-lying area", kind: "metric", metric: { name: "Low-lying area", sign: "+" } }
           ]
@@ -174,10 +174,19 @@ HM.mechanism({
             }
           ],
           children: [
-            { label: "Window protection (wind)", kind: "metric", metric: { name: "Window protection (wind)", sign: "-" },
+            { label: "Window protection (wind)", kind: "metric", metric: { name: "Window protection (wind)", measure: "No data", sign: "-" },
               evidence: "[@hasan2012] found that households with window protection measures (storm shutters, metal panels, or plywood sheets on windows) are less likely to evacuate than households without protection measures." },
-            { label: "Roof protection (wind)", kind: "metric", metric: { name: "Roof protection (wind)", sign: "-" } },
-            { label: "Ground elevation (flood)", kind: "metric", metric: { name: "Ground elevation and foundation type (flooding)", source: ["nsi"], sign: "-" } }
+            { label: "Roof protection (wind)", kind: "metric", metric: { name: "Roof protection (wind)", measure: "No data", sign: "-" } },
+            {
+              label: "Foundation (flood)",
+              title: "Ground elevation and foundation type (flooding)",
+              kind: "group",
+              note: "Built from National Structure Inventory fields <code>found_ht</code> (foundation height above ground, feet) and <code>found_type</code> (I pile, P pier, W solid wall, B basement, C crawl, F fill, S slab), aggregated over structures in each area.",
+              children: [
+                { label: "Median foundation height", kind: "metric", metric: { name: "median_found_ht", measure: "Median foundation height above ground (feet) of structures in the area, from NSI <code>found_ht</code>", source: ["nsi"], sign: "-" } },
+                { label: "Foundation type shares", kind: "metric", metric: { name: "pct_found_type_x", measure: "Share of structures in the area with foundation type <i>x</i>, from NSI <code>found_type</code>; the expected direction depends on the type (e.g., elevated pile or pier vs. slab or basement)", source: ["nsi"], sign: "?" } }
+              ]
+            }
           ]
         }
       ]

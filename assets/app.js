@@ -327,7 +327,7 @@
           <dt>Metric</dt><dd class="strong">${esc(metric.name || n.label)}</dd>
           <dt>Measure</dt><dd>${metric.measure || '<span class="na">to be specified</span>'}</dd>
           <dt>Expected Directions</dt><dd>${metric.sign ? `<span class="sign ${signCls(metric.sign)}">${SIGN[metric.sign]}</span> on evacuation motivation` : '<span class="na">—</span>'}</dd>
-          <dt>Data source</dt><dd>${srcChips(metric.source) || '<span class="na">to be specified</span>'}</dd>
+          <dt>Data source</dt><dd>${srcChips(metric.source) || `<span class="na">${metric.measure === "No data" ? "no data" : "to be specified"}</span>`}</dd>
         </dl></div>`;
     }
     if (n.evidence) html += `<div class="sec"><div class="block-label mono">Evidence</div><div class="ev"><i class="dot"></i><p>${rich(n.evidence)}</p></div></div>`;
@@ -454,6 +454,7 @@
   function viewMetrics() {
     const rows = metricRows();
     const withSrc = rows.filter((r) => (r.x.source || []).length).length;
+    const noData = rows.filter((r) => !(r.x.source || []).length && r.x.measure === "No data").length;
     const srcKeys = Object.keys(HM.srcs).filter((k) => rows.some((r) => (r.x.source || []).includes(k)));
     const dirCell = (sg) => sg ? `<span class="sign ${signCls(sg)}">${SIGN[sg]}</span>` : '<span class="na">—</span>';
     const sections = HM.mechs.map((m) => {
@@ -466,7 +467,7 @@
           <td class="mpath">${trail || '<span class="na">—</span>'}</td>
           <td class="mname"><a href="${hrefOf(n)}" title="open in overview">${esc(x.name || n.label)}</a></td>
           <td>${x.measure || '<span class="na">to be specified</span>'}</td>
-          <td>${srcChips(x.source) || '<span class="na">to be specified</span>'}</td>
+          <td>${srcChips(x.source) || `<span class="na">${x.measure === "No data" ? "no data" : "to be specified"}</span>`}</td>
           <td class="dir">${dirCell(x.sign)}</td>
         </tr>`;
       }).join("");
@@ -480,7 +481,8 @@
       <div class="readout mono">
         <div><b>${rows.length}</b><span>metrics</span></div>
         <div><b>${withSrc}</b><span>with data source</span></div>
-        <div><b>${rows.length - withSrc}</b><span>source to be specified</span></div>
+        <div><b>${rows.length - withSrc - noData}</b><span>source to be specified</span></div>
+        <div><b>${noData}</b><span>no data</span></div>
         <div><b>${srcKeys.length}</b><span>data sources</span></div>
       </div>
       <div class="mtools">
