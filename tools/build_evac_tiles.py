@@ -60,7 +60,9 @@ for hk in keys:
         geoids.add(p["GEOID"])
         cbg_out.write(json.dumps({"type": "Feature", "geometry": f["geometry"],
             "properties": {"GEOID": p["GEOID"], "oid": p["order_id"], "hk": hk, "pct": p.get("pct_bg_in_area"),
-                           "inc": p.get("bg_in_order_county"), "conf": p.get("confidence"), "level": p.get("level")}}) + "\n")
+                           "inc": p.get("bg_in_order_county"), "conf": p.get("confidence"), "level": p.get("level"),
+                           # multi-county orders have no single county FIPS, so bg_in_order_county is always 0
+                           "mc": 0 if p.get("county_fips") else 1}}) + "\n")
         # full attributes for the identify panel, keyed by GEOID|order_id
         props["cbg"][f'{p["GEOID"]}|{p["order_id"]}'] = p
     os.makedirs(os.path.join(OUT, "props"), exist_ok=True)

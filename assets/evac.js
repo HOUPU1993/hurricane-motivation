@@ -85,8 +85,8 @@
             <label><input type="checkbox" id="ev-cbg-line" checked>outline</label>
           </div>
           <div class="sub">
-            <label><input type="checkbox" id="ev-sliver" checked>hide slivers (&lt; 1% of block group)</label>
-            <label><input type="checkbox" id="ev-county" checked>order county only</label>
+            <label title="Hide block groups with less than 1% of their area inside the order area (pct_bg_in_area < 1)"><input type="checkbox" id="ev-sliver" checked>hide slivers (&lt; 1% of block group inside)</label>
+            <label title="Hide block groups in a neighboring county that the order only touches because of boundary simplification (bg_in_order_county = 0). Multi-county orders are always kept."><input type="checkbox" id="ev-county" checked>hide neighbor-county edges</label>
           </div>
         </div>
         <div class="ev-sec"><div class="block-label mono">Color areas by</div>
@@ -204,7 +204,7 @@
     const hkf = ["==", ["get", "hk"], st.hk || ""];
     const cf = ["all", hkf];
     if (st.noSliver) cf.push([">=", ["get", "pct"], 1]);
-    if (st.inCounty) cf.push(["==", ["get", "inc"], 1]);
+    if (st.inCounty) cf.push(["any", ["==", ["get", "inc"], 1], ["==", ["coalesce", ["get", "mc"], 0], 1]]);
     ["cbg-fill", "cbg-line"].forEach((l) => { m.setFilter(l, cf); m.setLayoutProperty(l, "visibility", st.showCbg ? "visible" : "none"); });
     ["area-fill", "area-line", "area-hl"].forEach((l) => m.setLayoutProperty(l, "visibility", st.showArea ? "visible" : "none"));
     m.setFilter("area-fill", hkf); m.setFilter("area-line", hkf);
