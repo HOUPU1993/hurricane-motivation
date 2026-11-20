@@ -223,6 +223,8 @@ HM.sources({
   meta_sci: { label: "Meta SCI", url: "https://data.humdata.org/dataset/social-connectedness-index",
               apa: "Meta. (n.d.). <i>Social Connectedness Index</i> [Data set]. Humanitarian Data Exchange.",
               note: "Measure introduced in Bailey et al. (2018)." },
+  noaa_slr: { label: "NOAA Sea Level Rise Viewer", url: "https://coast.noaa.gov/digitalcoast/tools/slr.html",
+              apa: "NOAA Office for Coastal Management. (n.d.). <i>Sea Level Rise Viewer</i> [Data set]. Digital Coast." },
   floodins: { label: "Flood insurance rates", url: "https://www.insuranceforgood.org/flood-insurance",
               apa: "<i>Flood insurance</i> [Web page]. (n.d.). insuranceforgood.org." }
 });

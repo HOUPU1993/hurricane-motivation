@@ -138,11 +138,11 @@ HM.mechanism({
           kind: "group",
           open: false,
           children: [
-            { label: "Mobile home", kind: "metric", metric: { name: "Pct. of mobile home households", measure: "CBG-level share of households living in mobile homes", sign: "+" },
+            { label: "Mobile home", kind: "metric", metric: { name: "Pct. of mobile home households", measure: "CBG-level share of households living in mobile homes", source: ["acs", "infutor"], sign: "+" },
               evidence: "[@solis2009] found that residents of mobile homes were more likely to evacuate. [@karaye2019] and [@tanim2022] found that residents of mobile homes had a significantly higher evacuation tendency than residents of single-family homes." },
-            { label: "Single-family", kind: "metric", metric: { name: "Pct. of single-family households", measure: "CBG-level share of households living in single-family homes", sign: "?" } },
-            { label: "Multi-family", kind: "metric", metric: { name: "Pct. of multi-family households", measure: "CBG-level share of households living in multi-family homes", sign: "?" } },
-            { label: "Apartment", kind: "metric", metric: { name: "Pct. of apartment households", measure: "CBG-level share of households living in apartments", sign: "?" } }
+            { label: "Single-family", kind: "metric", metric: { name: "Pct. of single-family households", measure: "CBG-level share of households living in single-family homes", source: ["acs", "infutor"], sign: "?" } },
+            { label: "Multi-family", kind: "metric", metric: { name: "Pct. of multi-family households", measure: "CBG-level share of households living in multi-family homes", source: ["acs", "infutor"], sign: "?" } },
+            { label: "Apartment", kind: "metric", metric: { name: "Pct. of apartment households", measure: "CBG-level share of households living in apartments", source: ["acs", "infutor"], sign: "?" } }
           ]
         },
         {
@@ -160,7 +160,7 @@ HM.mechanism({
               evidence: "[@stein2010] highlights that people living in an evacuation zone are significantly more likely to evacuate." },
             { label: "FEMA flood zone", kind: "metric", metric: { name: "FEMA flood zone", measure: "Whether the area lies in a FEMA special flood hazard area", source: ["fema_nfhl"], sign: "+" },
               evidence: "[@solis2009] found that residents of flood-prone areas were more likely to evacuate." },
-            { label: "Low-lying area", kind: "metric", metric: { name: "Low-lying area", sign: "+" } }
+            { label: "Low-lying area", kind: "metric", metric: { name: "Low-lying area", measure: "Whether the area is mapped as low-lying, from the NOAA Sea Level Rise Viewer data", source: ["noaa_slr"], sign: "+" } }
           ]
         },
         {
