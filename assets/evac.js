@@ -106,7 +106,7 @@
   }
 
   function renderLegend() {
-    const cbg = `<div><i class="cbgkey"></i><span class="mono">CBG</span>shade = max % of block group inside an order</div>`;
+    const cbg = `<div class="cap2">Area and CBG use the same colors. Each CBG row carries the confidence and level of its order; CBG shade = % of the block group inside the order.</div>`;
     $("#ev-legend").innerHTML = st.colorBy === "conf"
       ? `<div class="ramp"><i style="background:linear-gradient(90deg, ${CONF_STOPS.map(([x, c]) => `${c} ${x * 100}%`).join(", ")})"></i>
           <div class="ticks"><span>0</span><span>0.25</span><span>0.5</span><span>0.75</span><span>1</span></div>
@@ -119,8 +119,8 @@
     st.colorBy = c; renderLegend(); renderList();
     if (st.ready) {
       const e = c === "conf" ? confExpr : levelExpr;
-      st.map.setPaintProperty("area-fill", "fill-color", e);
-      st.map.setPaintProperty("area-line", "line-color", e);
+      ["area-fill", "cbg-fill"].forEach((l) => st.map.setPaintProperty(l, "fill-color", e));
+      ["area-line", "cbg-line"].forEach((l) => st.map.setPaintProperty(l, "line-color", e));
     }
   }
 
@@ -176,9 +176,9 @@
         { id: "sat", type: "raster", source: "sat", layout: { visibility: "none" } },
         { id: "satfb", type: "raster", source: "satfb", layout: { visibility: "none" } },
         { id: "cbg-fill", type: "fill", source: "cbg", "source-layer": "cbg",
-          paint: { "fill-color": "#5fd4c8", "fill-opacity": ["interpolate", ["linear"], ["get", "pct"], 0, 0.05, 50, 0.28, 100, 0.5] } },
+          paint: { "fill-color": confExpr, "fill-opacity": ["interpolate", ["linear"], ["coalesce", ["get", "pct"], 0], 0, 0.12, 50, 0.35, 100, 0.55] } },
         { id: "cbg-line", type: "line", source: "cbg", "source-layer": "cbg", minzoom: 7,
-          paint: { "line-color": "#5fd4c8", "line-opacity": 0.55, "line-width": ["interpolate", ["linear"], ["zoom"], 7, 0.3, 12, 0.9] } },
+          paint: { "line-color": confExpr, "line-opacity": 0.7, "line-width": ["interpolate", ["linear"], ["zoom"], 7, 0.3, 12, 0.9] } },
         { id: "area-fill", type: "fill", source: "areas", "source-layer": "areas",
           paint: { "fill-color": confExpr, "fill-opacity": 0.28 } },
         { id: "area-line", type: "line", source: "areas", "source-layer": "areas",
@@ -199,6 +199,7 @@
     ["cbg-fill", "cbg-line"].forEach((l) => { m.setFilter(l, cf); m.setLayoutProperty(l, "visibility", st.showCbg ? "visible" : "none"); });
     ["area-fill", "area-line", "area-hl"].forEach((l) => m.setLayoutProperty(l, "visibility", st.showArea ? "visible" : "none"));
     m.setFilter("area-fill", hkf); m.setFilter("area-line", hkf);
+    m.setPaintProperty("area-fill", "fill-opacity", st.showCbg ? 0.08 : 0.3);
     m.setFilter("area-hl", ["==", ["get", "oid"], st.oid || ""]);
   }
 
@@ -244,14 +245,13 @@
     }).join("")}</table>`;
   }
 
-  async function identify(oids, geoid, lngLat) {
+  async function identify(oids, cbgRows, lngLat) {
     const P = await loadProps(st.hk);
+    const short = (id) => id.replace(st.hk + "_", "");
     const tabs = [];
-    oids.forEach((id) => tabs.push({ label: `Area · ${id.replace(st.hk + "_", "")}`, file: "evacuation_area.geojson", html: propTable(P.areas[id] || { order_id: id }) }));
-    if (geoid) {
-      const rows = (P.cbg[geoid] || []).filter((r) => !st.inCounty || r.bg_in_order_county);
-      tabs.push({ label: `CBG · ${geoid}`, file: "evacuation_cbg.geojson", html: rows.length ? rows.map((r) => `<div class="prow mono">× ${esc(r.order_id)}</div>${propTable(r)}`).join("") : propTable({ GEOID: geoid }) });
-    }
+    oids.forEach((id) => tabs.push({ label: `Area · ${short(id)}`, file: "evacuation_area.geojson", html: propTable(P.areas[id] || { order_id: id }) }));
+    cbgRows.forEach((r) => tabs.push({ label: `CBG · ${r.GEOID} × ${short(r.oid)}`, file: "evacuation_cbg.geojson",
+      html: propTable(P.cbg[`${r.GEOID}|${r.oid}`] || { GEOID: r.GEOID, order_id: r.oid }) }));
     if (!tabs.length) return;
     $("#ev-detail").innerHTML = `<div class="ev-card">
       <div class="ev-card-top mono"><span>Properties · ${tabs.length} feature${tabs.length > 1 ? "s" : ""}</span><button class="x" id="ev-close">×</button></div>
@@ -267,13 +267,18 @@
     $(".evac-panel").scrollTo({ top: $("#ev-detail").offsetTop - 80, behavior: "smooth" });
   }
 
+  const short = (id) => String(id || "").replace(st.hk + "_", "");
   function onClick(e) {
     const m = st.map;
     const feats = m.queryRenderedFeatures(e.point, { layers: ["area-fill", "cbg-fill"].filter((l) => m.getLayoutProperty(l, "visibility") !== "none") });
     if (!feats.length) return;
     const h = byKey(st.hk);
     const areaF = feats.filter((f) => f.layer.id === "area-fill");
-    const cbgF = feats.find((f) => f.layer.id === "cbg-fill");
+    const cbgRows = [];
+    feats.filter((f) => f.layer.id === "cbg-fill").forEach((f) => {
+      const p = f.properties;
+      if (!cbgRows.some((r) => r.GEOID === p.GEOID && r.oid === p.oid)) cbgRows.push(p);
+    });
     const oids = [...new Set(areaF.map((f) => f.properties.oid))];
     let html = "";
     if (oids.length) {
@@ -282,15 +287,15 @@
         return `<button class="pp-o" data-o="${esc(id)}">${badge(o)}${esc(o.county || id)} · ${esc((o.announce || "").slice(0, 16))}<br><small>${esc((o.area || "").slice(0, 90))}${(o.area || "").length > 90 ? "…" : ""}</small></button>`;
       }).join("");
     }
-    if (cbgF) {
-      const p = cbgF.properties;
-      html += `<div class="pp-h mono">Block group ${esc(p.GEOID)}</div><div class="pp-b">${Number(p.pct).toFixed(1)}% inside an order · ${p.n} order${p.n > 1 ? "s" : ""}</div>`;
+    if (cbgRows.length) {
+      html += `<div class="pp-h mono">Block group ${esc(cbgRows[0].GEOID)}</div>` + cbgRows.map((p) =>
+        `<div class="pp-b">${badge({ confidence: p.conf, level: p.level })} ${esc(short(p.oid))} · ${Number(p.pct).toFixed(1)}% inside</div>`).join("");
     }
     html += googleLinks(e.lngLat.lng, e.lngLat.lat);
     if (st.popup) st.popup.remove();
     st.popup = new maplibregl.Popup({ maxWidth: "320px", className: "ev-pop" }).setLngLat(e.lngLat).setHTML(html).addTo(m);
     $$(".pp-o", st.popup.getElement()).forEach((b) => (b.onclick = () => selectOrder(b.dataset.o, false)));
-    identify(oids, cbgF ? cbgF.properties.GEOID : null, e.lngLat);
+    identify(oids, cbgRows, e.lngLat);
   }
 
   // ---------- mount ----------
