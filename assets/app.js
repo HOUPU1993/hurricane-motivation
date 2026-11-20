@@ -125,6 +125,13 @@
         (n.children || []).forEach((c, i) => walk(c, n, path ? `${path}.${i + 1}` : `${i + 1}`, depth + 1));
       };
       m.root.children.forEach((c, i) => walk(c, m.root, `${i + 1}`, 1));
+      if (m.metricsOnly) {
+        const g = { label: m.metricsOnly.group, kind: "group", parent: m.root, mech: m, depth: 1 };
+        m.metricsOnly.items.forEach((it, i) => {
+          const n = Object.assign({}, it, { kind: "metric", metricsOnly: true, parent: g, mech: m, depth: 2, path: `0.${i + 1}`, key: `${m.id}/x${i + 1}` });
+          HM.nodes[n.key] = n;
+        });
+      }
     });
     // citation index: reference key -> [{ key: node key, text }]
     const add = (text, node) => {
@@ -156,7 +163,7 @@
 
   const isOpen = (n) => (state.open.has(n.key) ? state.open.get(n.key) : n.open !== false);
   const pathOf = (n) => { const p = []; for (let x = n; x; x = x.parent) p.unshift(x); return p; };
-  const hrefOf = (n) => `#/${n.mech.id}${n.path ? "/" + n.path : ""}`;
+  const hrefOf = (n) => (n.metricsOnly ? "#/metrics" : `#/${n.mech.id}${n.path ? "/" + n.path : ""}`);
 
   // ---------- page: overview ----------
   function viewHome() {
@@ -465,11 +472,16 @@
         const text = [m.title, pathOf(n).map((a) => a.label).join(" "), x.name, stripTags(x.measure || ""), (x.source || []).map((k) => (HM.srcs[k] || {}).label || k).join(" ")].join(" ").toLowerCase();
         return `<tr data-text="${esc(text)}" data-src="${esc((x.source || []).join(" ") || "none")}">
           <td class="mpath">${trail || '<span class="na">—</span>'}</td>
-          <td class="mname"><a href="${hrefOf(n)}" title="open in overview">${esc(x.name || n.label)}</a></td>
+          <td class="mname">${n.metricsOnly
+            ? `<button class="mx" data-x="${esc(n.key)}" title="show formula and definitions">${esc(x.name || n.label)}<i class="chev"></i></button>`
+            : `<a href="${hrefOf(n)}" title="open in overview">${esc(x.name || n.label)}</a>`}</td>
           <td>${x.measure || '<span class="na">to be specified</span>'}</td>
           <td>${srcChips(x.source) || `<span class="na">${x.measure === "No data" ? "no data" : "to be specified"}</span>`}</td>
           <td class="dir">${dirCell(x.sign)}</td>
-        </tr>`;
+        </tr>${n.metricsOnly ? `<tr class="mdetail" data-for="${esc(n.key)}" hidden><td></td><td colspan="4">
+          ${x.formula ? `<div class="formula">${x.formula}</div>` : ""}
+          ${(x.definitions || []).length ? `<ul class="defs">${x.definitions.map((d) => `<li>${d}</li>`).join("")}</ul>` : ""}
+        </td></tr>` : ""}`;
       }).join("");
       return `<section class="msec" data-m="${m.id}">
         <div class="sec-head"><h2><span class="mono mcode">Mechanism ${esc(String(m.code).replace(/^M/, ""))}</span>${esc(m.title)}</h2><span class="mono note mcount">${mr.length} metrics</span></div>
@@ -499,14 +511,21 @@
       $$(".msec.empty").forEach((sec) => (sec.hidden = !!(q || f)));
       $$(".msec:not(.empty)").forEach((sec) => {
         let n = 0;
-        $$("tbody tr", sec).forEach((tr) => {
+        $$("tbody tr:not(.mdetail)", sec).forEach((tr) => {
           const hit = (!q || tr.dataset.text.includes(q)) && (!f || tr.dataset.src.split(" ").includes(f));
           tr.hidden = !hit; n += hit;
+          const d = tr.nextElementSibling;
+          if (d && d.classList.contains("mdetail")) d.hidden = !hit || !tr.classList.contains("open");
         });
         sec.hidden = !n; total += n;
       });
       $("#mempty").hidden = total > 0;
     };
+    $$(".mx").forEach((b) => (b.onclick = () => {
+      const tr = b.closest("tr"), d = tr.nextElementSibling;
+      const open = !tr.classList.contains("open");
+      tr.classList.toggle("open", open); d.hidden = !open;
+    }));
     $("#mfilter").oninput = (e) => { q = e.target.value.trim().toLowerCase(); apply(); };
     $$("#srcfilter button").forEach((b) => (b.onclick = () => {
       f = b.dataset.f; $$("#srcfilter button").forEach((x) => x.classList.toggle("on", x === b)); apply();

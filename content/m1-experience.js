@@ -35,18 +35,28 @@ HM.mechanism({
     "Overall, more hurricane experience is associated with lower evacuation outcomes. [@pham2020] studied Hurricane Matthew and found that the evacuation rate of households with hurricane experience was half that of households without it.",
     "However, [@huang2016] summarized 21 studies in a meta-analysis and found that the correlation between hurricane experience and evacuation outcomes is not stable. To understand why, hurricane experience can be **decomposed into mediators** that may influence evacuation outcomes."
   ],
+  // Proxy metrics listed on the Metrics page only (not shown in the Overview tree).
+  metricsOnly: {
+    group: "Hurricane experience (proxy)",
+    items: [
+    { label: "H34 · 34-knot", metric: { name: "Amount of H34",
+      measure: "Historical amount of times each CBG experienced the 34-knot wind swath (covering ≥ 50% of its land area) in the 10 years before the study hurricane",
+      formula: "H<sub>i</sub><sup>34</sup> = Σ<sub>k</sub> 1(c<sub>ik</sub> ≥ 0.5)",
+      definitions: ["c<sub>ik</sub>: share of CBG <i>i</i>’s land area covered by the 34-knot wind swath of storm <i>k</i> (≥ 17.5 m/s, about 63 km/h; tropical-storm level)", "<i>k</i>: storms in the 10 years before the study hurricane"],
+      source: ["nhc_swath"], sign: "-" } },
+    { label: "H50 · 50-knot", metric: { name: "Amount of H50",
+      measure: "Historical amount of times each CBG experienced the 50-knot wind swath (covering ≥ 50% of its land area) in the 10 years before the study hurricane",
+      formula: "H<sub>i</sub><sup>50</sup> = Σ<sub>k</sub> 1(c<sub>ik</sub> ≥ 0.5)",
+      definitions: ["c<sub>ik</sub>: share of CBG <i>i</i>’s land area covered by the 50-knot wind swath of storm <i>k</i> (≥ 25.7 m/s, about 93 km/h; medium level)", "<i>k</i>: storms in the 10 years before the study hurricane"],
+      source: ["nhc_swath"], sign: "-" } },
+    { label: "H64 · 64-knot", metric: { name: "Amount of H64",
+      measure: "Historical amount of times each CBG experienced the 64-knot wind swath (covering ≥ 50% of its land area) in the 10 years before the study hurricane",
+      formula: "H<sub>i</sub><sup>64</sup> = Σ<sub>k</sub> 1(c<sub>ik</sub> ≥ 0.5)",
+      definitions: ["c<sub>ik</sub>: share of CBG <i>i</i>’s land area covered by the 64-knot wind swath of storm <i>k</i> (≥ 32.9 m/s, about 119 km/h; hurricane-force level)", "<i>k</i>: storms in the 10 years before the study hurricane"],
+      source: ["nhc_swath"], sign: "-" } }
+    ]
+  },
   children: [
-    {
-      label: "Hurricane experience",
-      title: "Historical hurricane experience (wind swath exposure)",
-      kind: "group",
-      note: "H stands for history: the number of storms in the 10 years before the study hurricane whose 34-, 50- or 64-knot wind swath covered at least 50% of the CBG’s land area. The expected direction is uncertain: experience acts through the evidence-backed chains below.",
-      children: [
-        { label: "H34 · 34-knot", title: "Amount of H34 (tropical-storm level)", kind: "metric", metric: { name: "Amount of H34", measure: "H<sub>i</sub><sup>34</sup> = Σ<sub>k</sub> 1(c<sub>ik</sub> ≥ 0.5)<br>c<sub>ik</sub>: share of CBG <i>i</i>’s land area covered by the 34-knot wind swath of storm <i>k</i> (≥ 17.5 m/s, about 63 km/h; tropical-storm level); <i>k</i>: storms in the 10 years before the study hurricane", source: ["nhc_swath"], sign: "?" } },
-        { label: "H50 · 50-knot", title: "Amount of H50 (medium level)", kind: "metric", metric: { name: "Amount of H50", measure: "H<sub>i</sub><sup>50</sup> = Σ<sub>k</sub> 1(c<sub>ik</sub> ≥ 0.5)<br>c<sub>ik</sub>: share of CBG <i>i</i>’s land area covered by the 50-knot wind swath of storm <i>k</i> (≥ 25.7 m/s, about 93 km/h; medium level); <i>k</i>: storms in the 10 years before the study hurricane", source: ["nhc_swath"], sign: "?" } },
-        { label: "H64 · 64-knot", title: "Amount of H64 (hurricane-force level)", kind: "metric", metric: { name: "Amount of H64", measure: "H<sub>i</sub><sup>64</sup> = Σ<sub>k</sub> 1(c<sub>ik</sub> ≥ 0.5)<br>c<sub>ik</sub>: share of CBG <i>i</i>’s land area covered by the 64-knot wind swath of storm <i>k</i> (≥ 32.9 m/s, about 119 km/h; hurricane-force level); <i>k</i>: storms in the 10 years before the study hurricane", source: ["nhc_swath"], sign: "?" } }
-      ]
-    },
     {
       label: "House preparation",
       title: "Hurricane experience → house preparation → evacuation motivation",
