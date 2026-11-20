@@ -537,7 +537,15 @@
     const parts = location.hash.replace(/^#\/?/, "").split("/").filter(Boolean);
     const app = $("#app");
     closeViewer();
-    if (parts[0] === "references") {
+    document.body.classList.toggle("map-mode", parts[0] === "evac");
+    if (parts[0] !== "evac" && window.HMEvac) window.HMEvac.unmount();
+    if (parts[0] === "evac") {
+      if (state.page !== "evac") { state.page = "evac"; state.rendered = null; app.innerHTML = ""; }
+      openInspector(null);
+      const go = () => window.HMEvac.show(app, parts[1]);
+      if (window.HMEvac) go();
+      else { const sc = document.createElement("script"); sc.src = "assets/evac.js"; sc.onload = go; document.body.appendChild(sc); }
+    } else if (parts[0] === "references") {
       state.page = "references"; state.rendered = null;
       app.innerHTML = viewReferences(); openInspector(null); window.scrollTo(0, 0);
     } else if (parts[0] === "metrics") {
@@ -557,7 +565,7 @@
       if (!mech) window.scrollTo(0, 0);
     }
     $$("#nav a").forEach((a) => a.classList.toggle("active", a.dataset.r === (state.page === "home" ? "home" : state.page)));
-    document.title = (state.mech && state.page === "home" ? HM.mechs.find((m) => m.id === state.mech).title + " · " : state.page === "references" ? "References · " : state.page === "metrics" ? "Metrics · " : "") + "Evacuation Motivation Framework";
+    document.title = (state.mech && state.page === "home" ? HM.mechs.find((m) => m.id === state.mech).title + " · " : state.page === "references" ? "References · " : state.page === "metrics" ? "Metrics · " : state.page === "evac" ? "Evacuation orders · " : "") + "Evacuation Motivation Framework";
   }
 
   function bindFigure() {
