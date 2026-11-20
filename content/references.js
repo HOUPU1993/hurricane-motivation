@@ -225,6 +225,8 @@ HM.sources({
               note: "Measure introduced in Bailey et al. (2018)." },
   noaa_slr: { label: "NOAA Sea Level Rise Viewer", url: "https://coast.noaa.gov/digitalcoast/tools/slr.html",
               apa: "NOAA Office for Coastal Management. (n.d.). <i>Sea Level Rise Viewer</i> [Data set]. Digital Coast." },
+  nhc_swath: { label: "NHC wind swaths", url: "https://www.nhc.noaa.gov/data/",
+              apa: "National Hurricane Center. (n.d.). <i>NHC data archive: Historical tropical cyclone wind swaths (34-, 50- and 64-knot wind radii)</i> [Data set]. National Oceanic and Atmospheric Administration." },
   floodins: { label: "Flood insurance rates", url: "https://www.insuranceforgood.org/flood-insurance",
               apa: "<i>Flood insurance</i> [Web page]. (n.d.). insuranceforgood.org." }
 });

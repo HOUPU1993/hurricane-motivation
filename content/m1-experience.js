@@ -37,6 +37,17 @@ HM.mechanism({
   ],
   children: [
     {
+      label: "Hurricane experience",
+      title: "Historical hurricane experience (wind swath exposure)",
+      kind: "group",
+      note: "For each CBG, count how many historical storms covered it with 34-, 50- and 64-knot winds. S<sub>k</sub> is the wind swath of historical storm <i>k</i>; <i>K</i> is the number of storms in the 10 years before the study hurricane. A CBG counts as covered only when at least 50% of its land area lies inside the swath, not when the boundaries merely intersect. The expected direction is uncertain: experience acts through the mediators below.",
+      children: [
+        { label: "H34 · 34-knot", title: "Historical Amount of H34 (tropical-storm level)", kind: "metric", metric: { name: "Historical Amount of H34", measure: "H<sub>i</sub><sup>34</sup> = Σ<sub>k=1</sub><sup>K</sup> 1( area(CBG<sub>i</sub> ∩ S<sub>k</sub><sup>34</sup>) / area(CBG<sub>i</sub>) ≥ 0.5 ) — number of times at least 50% of the land area of CBG <i>i</i> was covered by the 34-knot wind swath (≥ 17.5 m/s, about 63 km/h; tropical-storm level) of historical storms", source: ["nhc_swath"], sign: "?" } },
+        { label: "H50 · 50-knot", title: "Historical Amount of H50 (medium level)", kind: "metric", metric: { name: "Historical Amount of H50", measure: "H<sub>i</sub><sup>50</sup> = Σ<sub>k=1</sub><sup>K</sup> 1( area(CBG<sub>i</sub> ∩ S<sub>k</sub><sup>50</sup>) / area(CBG<sub>i</sub>) ≥ 0.5 ) — number of times at least 50% of the land area of CBG <i>i</i> was covered by the 50-knot wind swath (≥ 25.7 m/s, about 93 km/h; medium level) of historical storms", source: ["nhc_swath"], sign: "?" } },
+        { label: "H64 · 64-knot", title: "Historical Amount of H64 (hurricane-force level)", kind: "metric", metric: { name: "Historical Amount of H64", measure: "H<sub>i</sub><sup>64</sup> = Σ<sub>k=1</sub><sup>K</sup> 1( area(CBG<sub>i</sub> ∩ S<sub>k</sub><sup>64</sup>) / area(CBG<sub>i</sub>) ≥ 0.5 ) — number of times at least 50% of the land area of CBG <i>i</i> was covered by the 64-knot wind swath (≥ 32.9 m/s, about 119 km/h; hurricane-force level) of historical storms", source: ["nhc_swath"], sign: "?" } }
+      ]
+    },
+    {
       label: "House preparation",
       title: "Hurricane experience → house preparation → evacuation motivation",
       kind: "mediator",
